@@ -81,10 +81,10 @@ class Substrate:
         elif decision == "Quick Answer":
             response = self.quick_response(self.memory.session_memory["current_user_input"], f"Aria's Current Thoughts: {observation["thoughts"]}\nAria's Mindset: {observation["explanation"]}")
         elif decision == "Retrieve Memory":
-            response = self.tools.read_memory(parameters["search_query"])
+            response = self.run_read_memory(parameters["search_query"])
         elif decision == "Write Memory":
-            response = self.tools.write_memory(parameters["memory_type"],parameters["memory_content"])
-        return response       
+            response = self.run_write_memory(parameters["memory_type"],parameters["memory_content"])
+        return response
 
     def run_reasoning(self, user_input, thoughts=""):
         """Processes complex inputs using structured reasoning."""
@@ -109,6 +109,29 @@ class Substrate:
 
         return response
     
+    def run_read_memory(self, query):
+        query_response = self.tools.read_memory(query)
+
+        self.memory.session_memory["past_actions"].append({"step": self.step, "action": "Retrieve Memory", "result": query_response})
+        self.step += 1
+
+        observation = self.observe()
+
+        response = self.decide(observation)
+
+        return response
+    
+    def run_write_memory(self, memory_type, memory_content):
+        success = self.tools.write_memory(memory_type, memory_content)
+
+        self.memory.session_memory["past_actions"].append({"step": self.step, "action": "Write Memory", "result": f"{success}: {memory_content}"})
+        self.step += 1
+
+        observation = self.observe()
+
+        response = self.decide(observation)
+
+        return response
     def distill_reasoning(self, reasoning_output):
         """Mid-point compression to extract key insights before making the next decision."""
         format = """
