@@ -6,7 +6,7 @@ class MemorySystem:
         random_integer = random.randint(1000, 2000)
         self.session_memory = {
             "chain_id": random_integer,
-            "current_user_input": "",
+            "current__user_input": "",
             "conversation_history": [],
             "past_actions": [],
             "next_action": "",
