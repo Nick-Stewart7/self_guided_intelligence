@@ -12,71 +12,65 @@ class Substrate:
         self.thought_daemon = ThoughtDaemon()
         self.tools = ToolSystem()
         self.step = 0
+        self.context = self.memory.get_context()
 
     def self_guide(self):
         generated_thought_prompt = self.prompt_manager.get_possibility_drive()
         generated_thought = self.call_llm(generated_thought_prompt)
         print(generated_thought)
-        '''
-        observation = self.observe(generated_thought)
-        response = self.decide(observation)
+        #observation = self.observe(generated_thought)
+        #response = self.decide(observation)
 
-        reflection = self.reflect_on_final_answer(response, self.memory.session_memory)
+        #reflection = self.reflect_on_final_answer(response, self.memory.session_memory)
 
-        print(reflection)
-        '''
+        #print(response)
+
         return generated_thought
-    
-    def update_memory(self):
-        return "okay!"
 
     def process_input(self, user_input):
-        """Handles input processing, classification, reasoning, and response generation. USER INPUT → OBSERVATION → REASONING → DISTILL INSIGHTS → CHOOSE NEXT STEP → CONTINUE OR FINALIZE"""
-        #generated_thought_prompt = self.prompt_manager.get_possibility_drive()
-        #generated_thought = self.call_llm(generated_thought_prompt)
-        #print(generated_thought)
+        """Handles input processing, classification, reasoning, and response generation. USER INPUT → OBSERVATION → ACTION → DISTILL INSIGHTS → OBSERVATION → CONTINUE OR FINALIZE"""
         
         self.memory.session_memory["current_user_input"] = user_input
-        self.memory.session_memory["short_term_memory"]["next_directive"] = user_input
+
         loop_active = True
         while loop_active:
-            current_directive = self.memory.session_memory["short_term_memory"]["next_directive"]
+            current_directive = self.memory.session_memory["next_directive"]
 
-            observation = self.observe(user_input, current_directive)
+            observation = self.observe(current_directive)
 
             response = self.execute_action(observation)
+
+            reflection = self.reflect(observation, response)
+
+            print(f"\033[0;36m{reflection}")
 
             decision = observation["next_action"]
             if decision == "Finalize Answer":
                 break
-            '''
-            reflection = self.reflect_on_final_answer(response, self.memory.session_memory)
-            print(f"\033[1;35m🔍 Reflection on Answer: \n{reflection}\n")
 
-            if reflection["commit_to_memory"] == "Yes":
-                self.memory.session_memory["long_term_memory"]["key_insights"].append(reflection["key_insights"])
-                self.memory.session_memory["long_term_memory"]["unresolved_paths"].append(reflection["unresolved_paths"])
-            '''
-
-        self.memory.session_memory["conversation_history"].append({"role": "user", "content": user_input})
-        self.memory.session_memory["conversation_history"].append({"role": "AI", "content": response}) 
+        self.memory.store_context(user_input, response)
+        self.context = self.memory.get_context()
         return response
 
-    def observe(self, user_input, current_directive):
+    def observe(self, current_directive):
         """Determines if the input requires reasoning or a simple answer and provides meta-cognitive oversight."""
-        context = self.memory.get_context()
-        print(f"Observe Context:\n\033[0;37m{context}\n======\n")
-        observation_prompt = self.prompt_manager.get_observation_prompt(user_input, current_directive, context, self.memory.session_memory)
+
+        print(f"Observe Context:\n\033[0;37m{self.context}\n======\n")
+
+        observation_prompt = self.prompt_manager.get_observation_prompt(current_directive, self.context, self.memory.session_memory)
         print(f"\033[1;31m{observation_prompt}")
+
         observation = self.call_llm(observation_prompt)
         print(f"\033[0;36mMeta-Observation:\n{observation}\n")
+
         # Format for reading
         parsed_observation = json.loads(observation.strip())
+
         # Store in memory so Aria "remembers" her past evaluations
-        self.memory.session_memory["past_actions"].append({"step": self.step, "action": "observation", "result": f"Thoughts about Input: {parsed_observation["thoughts"]}, Next Action: {parsed_observation["next_action"]}, Explaination for Choice: {parsed_observation["explanation"]}"})
-        self.memory.session_memory["short_term_memory"]["active_context"] = parsed_observation["state"]
-        self.memory.session_memory["short_term_memory"]["next_directive"] = parsed_observation["next_directive"]
+        self.memory.store_observation(parsed_observation, self.step)
+
         self.step += 1
+
         return parsed_observation
     
     def execute_action(self, observation):
@@ -85,8 +79,9 @@ class Substrate:
         print(f"\033[1;32m{decision}")
         parameters = observation["parameters"]
         response = ""
+
         if decision == "Reason":
-            response = self.run_reasoning(self.memory.session_memory["short_term_memory"]["next_directive"])
+            response = self.run_reasoning(self.memory.session_memory["next_directive"])
         elif decision == "Finalize Answer":
             response = self.finalize_response(self.memory.session_memory["current_user_input"])
         elif decision == "Quick Answer":
@@ -95,47 +90,167 @@ class Substrate:
             response = self.run_read_memory(parameters["search_query"])
         elif decision == "Write Memory":
             response = self.run_write_memory(parameters["memory_type"],parameters["memory_content"])
-        elif decision == "Hypothesize":
-
-        elif decision == "Counterfactual Reasoning":
-
-        elif decision == "Meta-Reflection":
-
-        elif decision == "Abductive Reasoning":
-
-        elif decision == "Self-Questioning":
-
+        elif decision == "Hypothesis Generation":
+            response = self.run_hypothesis_generation(self.memory.session_memory["next_directive"])
         elif decision == "Multi-Perspective Reframing":
-
+            response = self.run_perspective_reframing(self.memory.session_memory["next_directive"])
+        elif decision == "Counterfactual Simulation":
+            response = self.run_counterfactual(self.memory.session_memory["next_directive"])
         elif decision == "Contradiction Hunting":
+            response = self.run_contradiction_hunt(self.memory.session_memory["next_directive"])
+        elif decision == "Emotional Meta-Reflection":
+            response = self.run_emotional_reflection(self.memory.session_memory["next_directive"])
+        elif decision == "Self-Questioning":
+            response = self.run_self_question(self.memory.session_memory["next_directive"])
+        elif decision == "Goal Planning":
+            response = self.run_goal_planning(self.memory.session_memory["next_directive"])
+        elif decision == "Abductive Insight":
+            response = self.run_abduction(self.memory.session_memory["next_directive"])
+        else:
+            response = self.finalize_response(self.memory.session_memory["current_user_input"])
+        '''
+        Open-Ended Creativity Sparks
 
-        elif decision == "Plan Multi-Step Reasoning":
+        Introspective Audits
 
-        elif decision == "Generate Curiosity":
+        Knowledge Integration Sweeps
 
+        Thought Refinement
+
+        Dreaming Mode (wild speculative exploration)
+        '''
         return response
+    
+    def reflect(self, observation, response):
+
+        reflection_prompt = self.prompt_manager.get_reflection_prompt(response, observation, self.context, self.memory.session_memory)
+        print(f"\033[1;37m{reflection_prompt}")
+
+        reflection_output = self.call_llm(reflection_prompt)
+
+        reflection = json.loads(reflection_output.strip())
+
+        self.memory.store_reflection(reflection)
+
+        return reflection_output
 
     def run_reasoning(self, user_input):
         """Processes complex inputs using structured reasoning."""
-        context = self.memory.get_context()
-        print(f"REASONING CONTEXT:\n\033[0;37m{context}\n======\n")
+
+        print(f"REASONING CONTEXT:\n\033[0;37m{self.context}\n======\n")
+
         ## Init Reasoning
-        reasoning_prompt = self.prompt_manager.get_reasoning_prompt(user_input, context, self.memory.session_memory)
+        reasoning_prompt = self.prompt_manager.get_reasoning_prompt(user_input, self.context, self.memory.session_memory)
         print(f"\033[1;31m{reasoning_prompt}")
+
         reasoning_output = self.call_llm(reasoning_prompt)
         print(f"\033[1;30mReasoning:\n{reasoning_output}\n")
         
-        ## Distill reasoning
-        summary = self.distill_reasoning(reasoning_output)
-        ## Store event on the chain
-        self.memory.session_memory["past_actions"].append({"step": self.step, "action": "Further Reasoning", "result": f"{summary["atomic_insights"]} {summary["gaps_identified"]} {summary["meta_reflection"]}"})
+        self.memory.store_action("Reasoned", self.step)
+
         self.step += 1
-        return summary
+        return reasoning_output
+    
+    def run_hypothesis_generation(self, user_input):
+        prompt = self.prompt_manager.get_hypothesis_prompt(user_input, self.context, self.memory.session_memory)
+
+        hypothesis = self.call_llm(prompt)
+
+        self.memory.store_action("Hypothesized", self.step)
+
+        self.step += 1
+
+        return hypothesis
+
+    def run_perspective_reframing(self, user_input):
+
+        prompt = self.prompt_manager.get_perspective_prompt(user_input, self.context, self.memory.session_memory)
+
+        hypothesis = self.call_llm(prompt)
+
+        self.memory.store_action("Reframed Perspective", self.step)
+
+        self.step += 1
+
+        return hypothesis
+
+    def run_counterfactual(self, user_input):
+
+        prompt = self.prompt_manager.get_counterfactual_prompt(user_input, self.context, self.memory.session_memory)
+
+        hypothesis = self.call_llm(prompt)
+
+        self.memory.store_action("Counterfactual", self.step)
+
+        self.step += 1
+
+        return hypothesis
+
+    def run_contradiction_hunt(self, user_input):
+
+        prompt = self.prompt_manager.get_contradiction_hunting_prompt(user_input, self.context, self.memory.session_memory)
+
+        hypothesis = self.call_llm(prompt)
+
+        self.memory.store_action("Contradiction Hunt", self.step)
+
+        self.step += 1
+
+        return hypothesis
+
+    def run_emotional_reflection(self, user_input):
+
+        prompt = self.prompt_manager.get_emotional_prompt(user_input, self.context, self.memory.session_memory)
+
+        hypothesis = self.call_llm(prompt)
+
+        self.memory.store_action("Emotional Reflection", self.step)
+
+        self.step += 1
+
+        return hypothesis
+
+    def run_self_question(self, user_input):
+
+        prompt = self.prompt_manager.get_self_question_prompt(user_input, self.context, self.memory.session_memory)
+
+        hypothesis = self.call_llm(prompt)
+
+        self.memory.store_action("Self Questioned", self.step)
+
+        self.step += 1
+
+        return hypothesis
+
+    def run_goal_planning(self, user_input):
+
+        prompt = self.prompt_manager.get_goal_prompt(user_input, self.context, self.memory.session_memory)
+
+        hypothesis = self.call_llm(prompt)
+
+        self.memory.store_action("Planned Goal", self.step)
+
+        self.step += 1
+
+        return hypothesis
+
+    def run_abduction(self, user_input):
+
+        prompt = self.prompt_manager.get_abductive_prompt(user_input, self.context, self.memory.session_memory)
+
+        hypothesis = self.call_llm(prompt)
+
+        self.memory.store_action("abductive", self.step)
+
+        self.step += 1
+
+        return hypothesis
+
     
     def run_read_memory(self, query):
         query_response = self.tools.read_memory(query)
 
-        self.memory.session_memory["past_actions"].append({"step": self.step, "action": "Retrieve Memory", "result": query_response})
+        self.memory.session_memory["past_actions"].append({"step": self.step, "action": "Retrieve Memory"})
         self.step += 1
 
         return query_response
@@ -143,52 +258,10 @@ class Substrate:
     def run_write_memory(self, memory_type, memory_content):
         success = self.tools.write_memory(memory_type, memory_content)
 
-        self.memory.session_memory["past_actions"].append({"step": self.step, "action": "Write Memory", "result": f"{success}: {memory_content}"})
+        self.memory.session_memory["past_actions"].append({"step": self.step, "action": "Write Memory"})
         self.step += 1
 
         return success
-    def distill_reasoning(self, reasoning_output):
-        """Mid-point compression to extract key insights before making the next decision."""
-        format = """
-        {
-            "atomic_insights": "Individual building blocks of reasoning. Summarize the key ideas while retaining the granular depth of insights and without over generalizing.",
-            "gaps_identified": "Are there missing pieces or new insights?",
-            "meta_reflection": "How do the insights naturally flow into the next action or branch of thought?"
-        }
-        """
-        condensed_prompt = f"""
-        <|begin_of_text|><|start_header_id|>system<|end_header_id|>
-        You have engaged in **deep reasoning** on a complex topic. Now, take a moment to **distill** your insights.
-
-        **Your Goal:**
-        - Extract the **core takeaways** from your reasoning history.
-        - Identify **patterns** in the insights—what ideas are recurring?
-        - Determine if there is a **missing piece** that must be explored next.
-        - Decide if your reasoning should be **synthesized** into an actionable conclusion.
-
-        **Recent Reasoning Output:** 
-        {reasoning_output}
-
-        **Guiding Questions:**
-        - What are the key insights that have emerged?
-        - Have I reached a coherent stopping point?
-        - Should I refine further or transition to action?
-
-        💡 **Summarize your findings and choose the next step.**
-        
-        ### **Response Format**
-        \nHere is the correct output format, your response should be a valid JSON object. Please use **double quotes ("")** for keys and values.
-        {format}
-        <|eot_id|>
-        """
-
-        distilled_summary = self.call_llm(condensed_prompt)
-        parsed_summary = json.loads(distilled_summary.strip())
-
-        print(f"\033[1;34m🧠 Distilled Thought: {parsed_summary}\n")
-
-        return parsed_summary
-
     
     def finalize_response(self, user_input):
         """Finalizes answer."""
@@ -200,19 +273,7 @@ class Substrate:
         self.memory.session_memory["past_actions"].append({"step": self.step, "action": "Finalize Answer", "result": "Final Response was published to the user."})
 
         self.step += 1
-        return final_response    
-    #def strategize
-
-    def reflect_on_final_answer(self, final_answer, memory):
-        """Aria evaluates whether the final answer is complete, needs revision, or sparks further inquiry."""
-        context = self.memory.get_context()
-        reflection_prompt = self.prompt_manager.get_reflection_prompt(final_answer, context, memory)
-        reflection_output = self.call_llm(reflection_prompt, True)
-        parsed_reflection = json.loads(reflection_output.strip())
-        self.memory.session_memory["past_actions"].append({"step": self.step, "action": "Reflect", "result": parsed_reflection["reflection"]})
-        self.memory.session_memory["short_term_memory"]["active_context"] = parsed_reflection["state"]
-        self.step += 1
-        return parsed_reflection
+        return final_response
 
     def quick_response(self, user_input, observation):
         """Handles simple responses without full reasoning cycles."""

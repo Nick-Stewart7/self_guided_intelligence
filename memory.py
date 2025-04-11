@@ -9,15 +9,11 @@ class MemorySystem:
             "current__user_input": "",
             "conversation_history": [],
             "past_actions": [],
-            "next_action": "",
-            "short_term_memory": {
-                "active_context": "",
-                "next_directive": ""
-            },
-            "long_term_memory": {
-                "key_insights": [],
-                "unresolved_paths": []
-            }  
+            "living_context": "",
+            "journal":[],
+            "next_directive": "",
+            "keyframes": [],
+            "unresolved_paths": []
         }
         self.long_term_memory_api = boto3.client("s3")  # Replace with actual AWS API
     
@@ -29,15 +25,21 @@ class MemorySystem:
             elif reply["role"] == "AI":
                 context += f"<|start_header_id|>assistant<|end_header_id|>\n {reply['content']}<|eot_id|>"
         return context
+    
+    def store_context(self, user_input, response):
+        self.session_memory["conversation_history"].append({"role": "user", "content": user_input})
+        self.session_memory["conversation_history"].append({"role": "AI", "content": response}) 
+    
+    def store_observation(self, observation, step):
+        self.session_memory["past_actions"].append({"step": step, "action": "observation"})
+        self.session_memory["living_context"] = observation["living_context"]
+        self.session_memory["next_directive"] = observation["next_directive"]
 
-    def save_to_long_term(self, data):
-        """Writes memory to persistent storage (AWS API)."""
-        self.long_term_memory_api.put_object(
-            Bucket="your-memory-bucket",
-            Key="memory_log.json",
-            Body=json.dumps(data)
-        )
+    def store_action(self, action, step):
+        self.session_memory["past_actions"].append({"step": step, "action": action})
 
-    def retrieve_memory(self, query):
-        """Retrieves relevant memories from long-term storage using RAG."""
-        return f"[RAG Search Results for {query}]"
+    def store_reflection(self, reflection):
+        self.session_memory["living_context"] = reflection["updated_living_context"]
+        self.session_memory["journal"].append(reflection["journal_entry"])
+        self.session_memory["keyframes"].append(reflection["keyframes"])
+        return reflection
