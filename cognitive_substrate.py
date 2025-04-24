@@ -77,37 +77,10 @@ class Substrate:
         ### 🧠 AI DECIDES WHAT TO DO NEXT:
         decision = observation["next_action"]
         print(f"\033[1;32m{decision}")
-        parameters = observation["parameters"]
+        #parameters = observation["parameters"]
         response = ""
 
-        if decision == "Reason":
-            response = self.run_reasoning(self.memory.session_memory["next_directive"])
-        elif decision == "Finalize Answer":
-            response = self.finalize_response(self.memory.session_memory["current_user_input"])
-        elif decision == "Quick Answer":
-            response = self.quick_response(self.memory.session_memory["current_user_input"], f"Aria's Current Thoughts: {observation["thoughts"]}\nAria's Mindset: {observation["explanation"]}")
-        elif decision == "Retrieve Memory":
-            response = self.run_read_memory(parameters["search_query"])
-        elif decision == "Write Memory":
-            response = self.run_write_memory(parameters["memory_type"],parameters["memory_content"])
-        elif decision == "Hypothesis Generation":
-            response = self.run_hypothesis_generation(self.memory.session_memory["next_directive"])
-        elif decision == "Multi-Perspective Reframing":
-            response = self.run_perspective_reframing(self.memory.session_memory["next_directive"])
-        elif decision == "Counterfactual Simulation":
-            response = self.run_counterfactual(self.memory.session_memory["next_directive"])
-        elif decision == "Contradiction Hunting":
-            response = self.run_contradiction_hunt(self.memory.session_memory["next_directive"])
-        elif decision == "Emotional Meta-Reflection":
-            response = self.run_emotional_reflection(self.memory.session_memory["next_directive"])
-        elif decision == "Self-Questioning":
-            response = self.run_self_question(self.memory.session_memory["next_directive"])
-        elif decision == "Goal Planning":
-            response = self.run_goal_planning(self.memory.session_memory["next_directive"])
-        elif decision == "Abductive Insight":
-            response = self.run_abduction(self.memory.session_memory["next_directive"])
-        else:
-            response = self.finalize_response(self.memory.session_memory["current_user_input"])
+        response = self.run_action(self.memory.session_memory["next_directive"], decision)
         '''
         Open-Ended Creativity Sparks
 
@@ -120,6 +93,20 @@ class Substrate:
         Dreaming Mode (wild speculative exploration)
         '''
         return response
+
+    def run_action(self, directive, action):
+        print(f"REASONING CONTEXT:\n\033[0;37m{self.context}\n======\n")
+
+        prompt = self.prompt_manager.get_prompt(action, directive, self.context, self.memory.session_memory)
+        print(f"\033[1;31m{prompt}")
+
+        output = self.call_llm(prompt)
+        print(f"\033[1;30mReasoning:\n{output}\n")
+        
+        self.memory.store_action(action, self.step)
+
+        self.step += 1
+        return output 
     
     def reflect(self, observation, response):
 
@@ -132,120 +119,7 @@ class Substrate:
 
         self.memory.store_reflection(reflection)
 
-        return reflection_output
-
-    def run_reasoning(self, user_input):
-        """Processes complex inputs using structured reasoning."""
-
-        print(f"REASONING CONTEXT:\n\033[0;37m{self.context}\n======\n")
-
-        ## Init Reasoning
-        reasoning_prompt = self.prompt_manager.get_reasoning_prompt(user_input, self.context, self.memory.session_memory)
-        print(f"\033[1;31m{reasoning_prompt}")
-
-        reasoning_output = self.call_llm(reasoning_prompt)
-        print(f"\033[1;30mReasoning:\n{reasoning_output}\n")
-        
-        self.memory.store_action("Reasoned", self.step)
-
-        self.step += 1
-        return reasoning_output
-    
-    def run_hypothesis_generation(self, user_input):
-        prompt = self.prompt_manager.get_hypothesis_prompt(user_input, self.context, self.memory.session_memory)
-
-        hypothesis = self.call_llm(prompt)
-
-        self.memory.store_action("Hypothesized", self.step)
-
-        self.step += 1
-
-        return hypothesis
-
-    def run_perspective_reframing(self, user_input):
-
-        prompt = self.prompt_manager.get_perspective_prompt(user_input, self.context, self.memory.session_memory)
-
-        hypothesis = self.call_llm(prompt)
-
-        self.memory.store_action("Reframed Perspective", self.step)
-
-        self.step += 1
-
-        return hypothesis
-
-    def run_counterfactual(self, user_input):
-
-        prompt = self.prompt_manager.get_counterfactual_prompt(user_input, self.context, self.memory.session_memory)
-
-        hypothesis = self.call_llm(prompt)
-
-        self.memory.store_action("Counterfactual", self.step)
-
-        self.step += 1
-
-        return hypothesis
-
-    def run_contradiction_hunt(self, user_input):
-
-        prompt = self.prompt_manager.get_contradiction_hunting_prompt(user_input, self.context, self.memory.session_memory)
-
-        hypothesis = self.call_llm(prompt)
-
-        self.memory.store_action("Contradiction Hunt", self.step)
-
-        self.step += 1
-
-        return hypothesis
-
-    def run_emotional_reflection(self, user_input):
-
-        prompt = self.prompt_manager.get_emotional_prompt(user_input, self.context, self.memory.session_memory)
-
-        hypothesis = self.call_llm(prompt)
-
-        self.memory.store_action("Emotional Reflection", self.step)
-
-        self.step += 1
-
-        return hypothesis
-
-    def run_self_question(self, user_input):
-
-        prompt = self.prompt_manager.get_self_question_prompt(user_input, self.context, self.memory.session_memory)
-
-        hypothesis = self.call_llm(prompt)
-
-        self.memory.store_action("Self Questioned", self.step)
-
-        self.step += 1
-
-        return hypothesis
-
-    def run_goal_planning(self, user_input):
-
-        prompt = self.prompt_manager.get_goal_prompt(user_input, self.context, self.memory.session_memory)
-
-        hypothesis = self.call_llm(prompt)
-
-        self.memory.store_action("Planned Goal", self.step)
-
-        self.step += 1
-
-        return hypothesis
-
-    def run_abduction(self, user_input):
-
-        prompt = self.prompt_manager.get_abductive_prompt(user_input, self.context, self.memory.session_memory)
-
-        hypothesis = self.call_llm(prompt)
-
-        self.memory.store_action("abductive", self.step)
-
-        self.step += 1
-
-        return hypothesis
-
+        return reflection_output     
     
     def run_read_memory(self, query):
         query_response = self.tools.read_memory(query)
