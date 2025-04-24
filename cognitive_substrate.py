@@ -18,14 +18,9 @@ class Substrate:
         generated_thought_prompt = self.prompt_manager.get_possibility_drive()
         generated_thought = self.call_llm(generated_thought_prompt)
         print(generated_thought)
-        #observation = self.observe(generated_thought)
-        #response = self.decide(observation)
+        response = self.process_input(generated_thought)
 
-        #reflection = self.reflect_on_final_answer(response, self.memory.session_memory)
-
-        #print(response)
-
-        return generated_thought
+        return response
 
     def process_input(self, user_input):
         """Handles input processing, classification, reasoning, and response generation. USER INPUT → OBSERVATION → ACTION → DISTILL INSIGHTS → OBSERVATION → CONTINUE OR FINALIZE"""
@@ -45,7 +40,7 @@ class Substrate:
             print(f"\033[0;36m{reflection}")
 
             decision = observation["next_action"]
-            if decision == "Finalize Answer":
+            if decision == "Finalize Answer" or decision == "Quick Answer":
                 break
 
         self.memory.store_context(user_input, response)
@@ -136,27 +131,6 @@ class Substrate:
         self.step += 1
 
         return success
-    
-    def finalize_response(self, user_input):
-        """Finalizes answer."""
-        context = self.memory.get_context()
-        print(f"FINALIZE CONTEXT:\n\033[0;37m{context}\n======\n")
-        finalize_prompt = self.prompt_manager.get_finalization_prompt(user_input, context, self.memory.session_memory)
-        print(f"\033[1;31m{finalize_prompt}")
-        final_response = self.call_llm(finalize_prompt)
-        self.memory.session_memory["past_actions"].append({"step": self.step, "action": "Finalize Answer", "result": "Final Response was published to the user."})
-
-        self.step += 1
-        return final_response
-
-    def quick_response(self, user_input, observation):
-        """Handles simple responses without full reasoning cycles."""
-        context = self.memory.get_context()
-        print(f"\033[1;33m{context}")
-        quick_prompt = self.prompt_manager.get_quick_response_prompt(user_input, context, observation)
-        print(f"\033[1;31m{quick_prompt}")
-        quick_response = self.call_llm(quick_prompt)
-        return quick_response
 
     def call_llm(self, prompt, size_flag=False):
         """Handles API call to LLaMA3."""
