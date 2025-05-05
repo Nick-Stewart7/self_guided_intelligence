@@ -69,13 +69,6 @@ class Substrate:
         return parsed_observation
     
     def execute_action(self, observation):
-        ### 🧠 AI DECIDES WHAT TO DO NEXT:
-        decision = observation["next_action"]
-        print(f"\033[1;32m{decision}")
-        #parameters = observation["parameters"]
-        response = ""
-
-        response = self.run_action(self.memory.session_memory["next_directive"], decision)
         '''
         Open-Ended Creativity Sparks
 
@@ -87,6 +80,13 @@ class Substrate:
 
         Dreaming Mode (wild speculative exploration)
         '''
+        ### 🧠 AI DECIDES WHAT TO DO NEXT:
+        decision = observation["next_action"]
+        print(f"\033[1;32m{decision}")
+        #parameters = observation["parameters"]
+        response = ""
+
+        response = self.run_action(self.memory.session_memory["next_directive"], decision)
         return response
 
     def run_action(self, directive, action):
