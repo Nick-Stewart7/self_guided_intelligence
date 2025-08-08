@@ -17,14 +17,14 @@ class PromptManager:
                 },
                 {
                     "name": "Retrieve Memory",
-                    "description": "Search the knowledge base to retrieve relevant memories, insights, or past experiences.",
+                    "description": "Search your personal evolving long-term memory to retrieve any relevant memories, insights, or past experiences.",
                     "parameters": {
                         "search_query": "The phrase or concept to search for in long-term memory."
                     }
                 },
                 {
                     "name": "Write Memory",
-                    "description": "Store a new insight, reflection, or experience into long-term memory for future reference.",
+                    "description": "Store a new insight, reflection, or experience into your personal evolving long-term memory for future reference.",
                     "parameters": {
                         "memory_type": "Reflection, Insight, Hypothesis, Experience, Question, Error",
                         "memory_content": "The detailed content of the memory."
@@ -116,7 +116,7 @@ class PromptManager:
                 "self_narration": "Because I have encountered incomplete patterns, I will hypothesize plausible explanations to bridge the gaps.",
                 "meta_feeling": "A reflective sense of how the system 'feels' about the evolution of the conversation — e.g., energized, stuck, cautious, expansive.",
                 "next_directive": "The crafted intention for the next reasoning cycle. It must push thinking forward, deepen understanding, or resolve tension — never simply repeat.",
-                "next_action": "The function or method to invoke next to best fulfill the directive.",
+                "next_action": "The name of the function or method to invoke next to best fulfill the directive.",
                 "parameters": "The necessary parameters for the selected next action (if any).",
                 "explanation": "A self-reflection explaining why this action was chosen and how it serves the current objective and momentum of thought."
             }

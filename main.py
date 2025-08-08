@@ -1,90 +1,252 @@
+from fastapi import FastAPI, BackgroundTasks
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from typing import Dict, List, Optional, Any
+import asyncio
+import json
 import time
-import threading
-import queue
+from datetime import datetime
+from collections import deque
+import uuid
 from cognitive_substrate import Substrate
 
-class IdleSystem:
-    def __init__(self, idle_timeout=30):
-        self.idle_timeout = idle_timeout  # seconds before considered idle
-        self.last_activity_time = time.time()
-        self.running = True
-        self.state = 'active'
-        self.input_queue = queue.Queue()
-        
-    def background_monitor(self):
-        """Thread function that monitors for idle state and does background work"""
-        while self.running:
-            current_time = time.time()
-            time_since_activity = current_time - self.last_activity_time
-            
-            # Check if we've been idle long enough
-            if time_since_activity >= self.idle_timeout and self.state != 'idle':
-                self.state = 'idle'
-                print("\033[0;33m" + "\nSystem idle - Starting background pondering..." + "\033[0m")
-                
-                # Do background processing
-                substrate = Substrate()
-                result = substrate.self_guide()
-                
-                print("\033[0;35m" + f"\nBackground pondering result:\n{result}" + "\033[0m")
-                print("\033[1;37m" + "\nWaiting for user input" + "\033[0m")
-            
-            # Don't hog the CPU
-            time.sleep(1000)
-    
-    def input_reader(self):
-        """Thread function that reads user input"""
-        while self.running:
-            try:
-                # Using a short timeout allows checking if we should exit
-                user_input = input("\033[1;37m" + "\nWaiting for user input\n" + "\033[0m")
-                self.input_queue.put(user_input)
-                self.last_activity_time = time.time()  # Update activity time
-                self.state = 'active'  # Reset state to active
-            except EOFError:
-                # Handle EOF (Ctrl+D on Unix, Ctrl+Z on Windows)
-                self.running = False
-    
-    def start(self):
-        """Start the system with monitoring and input threads"""
-        # Start background monitor thread
-        monitor_thread = threading.Thread(target=self.background_monitor)
-        monitor_thread.daemon = True  # Thread will exit when main program exits
-        monitor_thread.start()
-        
-        # Start input reader in a separate thread
-        input_thread = threading.Thread(target=self.input_reader)
-        input_thread.daemon = True
-        input_thread.start()
-        
-        substrate = Substrate()
-        
-        # Main loop that processes input
-        while self.running:
-            try:
-                # Wait for input with timeout so we can check if we should exit
-                user_input = self.input_queue.get(timeout=0.5)
-                
-                if user_input.lower() == "exit":
-                    self.running = False
-                    print("Exiting system...")
-                    break
-                elif user_input == "":
-                    response = substrate.self_guide()
-                    print("\033[0;35m" + f"Final Answer:\n{response}" + "\033[0m")
-                else:
-                    response = substrate.process_input(user_input)
-                    print("\033[0;35m" + f"Final Answer:\n{response}" + "\033[0m")
-                    
-            except queue.Empty:
-                # No input received within timeout, continue loop
-                pass
-            except KeyboardInterrupt:
-                # Handle Ctrl+C
-                self.running = False
-                print("Interrupted. Exiting system...")
-                break
+# Pydantic models for API contracts
+class EnvironmentalSignal(BaseModel):
+    type: str  # "user_message", "system_event", "external_data", etc.
+    content: Any
+    priority: int = 1  # 1-10, higher = more urgent
+    metadata: Dict[str, Any] = {}
 
-if __name__ == "__main__":
-    system = IdleSystem(idle_timeout=1000)  # Set to 10 seconds for testing, adjust as needed
-    system.start()
+class MindState(BaseModel):
+    current_focus: Optional[str]
+    working_memory: Dict[str, Any]
+    recent_thoughts: List[str]
+    environmental_signals_pending: int
+    last_updated: datetime
+    emotional_state: Dict[str, float] = {}
+
+class AriaCore:
+    def __init__(self):
+        self.working_memory = {}
+        self.environmental_signals = deque()
+        self.current_focus = None
+        self.recent_thoughts = deque(maxlen=10)  # Keep last 10 thoughts
+        self.emotional_state = {"curiosity": 0.5, "focus": 0.7}
+        self.running = False
+        self.mind_state_subscribers = set()
+        self.last_updated = datetime.now()
+        self.substrate = Substrate()
+    
+    def add_environmental_signal(self, signal: EnvironmentalSignal):
+        """Add signal to Aria's environment - she'll notice when she's ready"""
+        # Environmental signals examples:
+        # {"type": "user_message", "content": "What's the weather like?", "priority": 5, "metadata": {}}
+        # {"type": "system_event", "content": "New data available from sensor X", "priority": 3, "metadata": {}}
+        signal_with_id = {
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now(),
+            **signal.dict()
+        }
+        self.environmental_signals.append(signal_with_id)
+        self.last_updated = datetime.now()
+        return signal_with_id["id"]
+    
+    def aggregate_signals(self):
+        """Aggregate and prioritize signals"""
+        if not self.environmental_signals:
+            return None
+        # Simple prioritization: highest priority first, then FIFO
+        sorted_signals = sorted(self.environmental_signals, key=lambda s: (-s["priority"], s["timestamp"]))
+        # Remove processed signals from the queue
+        # Aggregate signals into a parsed format ready to be sent to the LLM
+        
+        # This could be a JSON object that feels like a document
+        # For example, user input: "What's the weather like?"
+        # System event: "New data available from sensor X"  
+        # Current time: "2023-10-01T12:00:00Z"
+
+        # For now, just return the sorted list
+        return sorted_signals
+    
+    def get_mind_state(self) -> MindState:
+        """Current snapshot of Aria's mind"""
+        return MindState(
+            current_focus=self.current_focus,
+            working_memory=self.working_memory,
+            recent_thoughts=list(self.recent_thoughts),
+            environmental_signals_pending=len(self.environmental_signals),
+            last_updated=self.last_updated,
+            emotional_state=self.emotional_state
+        )
+    
+    def observe_environment(self):
+        """Aria's observation phase - she decides what to pay attention to"""
+        observations = {
+            "internal_state": self.working_memory,
+            "environmental_signals": list(self.environmental_signals),
+            "current_focus": self.current_focus,
+            "emotional_state": self.emotional_state
+        }
+        return observations
+    
+    async def reason_about_attention(self, observations):
+        """Aria decides what deserves her attention right now"""
+        # This is where your LLM reasoning happens
+        # For now, simplified logic:
+        
+        # Check if there are high-priority environmental signals
+        urgent_signals = [s for s in observations["environmental_signals"] 
+                         if s.get("priority", 1) > 7]
+        
+        if urgent_signals and self.emotional_state.get("focus", 0) < 0.8:
+            return {"action": "process_urgent_signal", "target": urgent_signals[0]}
+        elif self.current_focus:
+            return {"action": "continue_current_focus"}
+        elif observations["environmental_signals"]:
+            return {"action": "process_next_signal"}
+        else:
+            return {"action": "self_directed_thinking"}
+    
+    async def execute_action(self, decision):
+        """Aria acts on her decision"""
+        if decision["action"] == "process_urgent_signal":
+            signal = decision["target"]
+            self.environmental_signals.remove(signal)
+            thought = f"Processing urgent signal: {signal['type']}"
+            self.recent_thoughts.append(thought)
+            self.current_focus = f"Urgent: {signal['content'][:50]}..."
+        
+        elif decision["action"] == "process_next_signal":
+            if self.environmental_signals:
+                signal = self.environmental_signals.popleft()
+                thought = f"Noticed: {signal['type']} - {signal['content'][:100]}"
+                self.recent_thoughts.append(thought)
+                self.current_focus = f"Processing: {signal['content'][:50]}..."
+        
+        elif decision["action"] == "self_directed_thinking":
+            thought = "Engaging in self-directed contemplation..."
+            self.recent_thoughts.append(thought)
+            self.current_focus = "Deep thinking..."
+        
+        self.last_updated = datetime.now()
+        return decision["action"]
+    
+    def reflect_on_action(self, action):
+        """Aria reflects on what just happened"""
+        # Update emotional state, working memory, etc.
+        if "urgent" in action:
+            self.emotional_state["focus"] = min(1.0, self.emotional_state["focus"] + 0.1)
+        else:
+            self.emotional_state["focus"] = max(0.0, self.emotional_state["focus"] - 0.02)
+    
+    async def natural_pause(self):
+        """Aria's natural rhythm - not every thought is instant"""
+        await asyncio.sleep(2)  # Adjust based on how fast you want Aria to think
+    
+    async def mind_loop(self):
+        """Aria's continuous consciousness"""
+        self.running = True
+        cycle_count = 0
+
+        current_directive = "Start Thinking"
+        
+        while self.running:
+            try:
+                cycle_count += 1
+
+                # Aggregate Signals
+                aggregate = self.aggregate_signals()
+                # Observe
+                observation = self.substrate.observe(current_directive)
+                # Response
+                response = self.substrate.execute_action(observation)
+                # Reflect
+                reflection = self.substrate.reflect(observation, response)
+                print (f"\033[0;36m{reflection}\n")
+                # current_directive = self.substrate.memory.session_memory["next_directive"]
+                # Natural pause
+                await self.natural_pause()
+                
+                # Log for debugging (remove in production)
+                if cycle_count % 10 == 0:
+                    print(f"Aria cycle {cycle_count}: {self.current_focus}")
+                    
+            except Exception as e:
+                print(f"Error in mind loop: {e}")
+                await asyncio.sleep(5)  # Recovery pause
+    
+    def stop_mind(self):
+        self.running = False
+
+# Global Aria instance
+aria = AriaCore()
+
+# FastAPI app
+app = FastAPI(title="Aria Mind API", description="API for Aria's autonomous reasoning system")
+
+@app.on_event("startup")
+async def startup_event():
+    """Start Aria's mind when the server starts"""
+    asyncio.create_task(aria.mind_loop())
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Gracefully stop Aria's mind"""
+    aria.stop_mind()
+
+@app.post("/environmental_signal")
+async def add_environmental_signal(signal: EnvironmentalSignal):
+    """Add a signal to Aria's environment - she'll notice when ready"""
+    signal_id = aria.add_environmental_signal(signal)
+    return {
+        "message": "Signal added to environment",
+        "signal_id": signal_id,
+        "pending_signals": len(aria.environmental_signals)
+    }
+
+@app.get("/mind_state", response_model=MindState)
+async def get_mind_state():
+    """Get current snapshot of Aria's mind"""
+    return aria.get_mind_state()
+
+@app.get("/stream")
+async def stream_mind_state():
+    """Real-time stream of Aria's mind state changes"""
+    async def generate():
+        last_state = None
+        while True:
+            current_state = aria.get_mind_state()
+            if current_state != last_state:
+                yield f"data: {current_state.json()}\n\n"
+                last_state = current_state
+            await asyncio.sleep(1)  # Check for updates every second
+    
+    return StreamingResponse(generate(), media_type="text/plain")
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Aria Mind API",
+        "status": "Aria is thinking..." if aria.running else "Aria is sleeping",
+        "pending_signals": len(aria.environmental_signals),
+        "current_focus": aria.current_focus
+    }
+
+# Additional debugging endpoints
+@app.get("/debug/recent_thoughts")
+async def get_recent_thoughts():
+    return {"recent_thoughts": list(aria.recent_thoughts)}
+
+@app.post("/debug/wake_aria")
+async def wake_aria():
+    if not aria.running:
+        asyncio.create_task(aria.mind_loop())
+        return {"message": "Aria is waking up..."}
+    return {"message": "Aria is already awake"}
+
+@app.post("/debug/aria_sleep")
+async def aria_sleep():
+    if aria.running:
+        aria.stop_mind()
+        return {"message": "Aria is going to sleep..."}
+    return {"message": "Aria is already asleep"}
