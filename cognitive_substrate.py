@@ -16,7 +16,7 @@ class Substrate:
         self.step = 0
         self.context = self.memory.get_context()
         self.thoughts = []
-
+    '''
     def self_guide(self, thoughts):
         """Main entry point for the self-guided AI system."""
         generated_thought_prompt = self.prompt_manager.get_possibility_drive()
@@ -25,7 +25,8 @@ class Substrate:
         response = self.process(generated_thought, thoughts)
 
         return response
-
+    '''
+    '''
     def process(
             self,
             user_input,
@@ -57,15 +58,15 @@ class Substrate:
         self.memory.store_context(user_input, response)
         self.context = self.memory.get_context()
         return response
-
-    def observe(self, current_directive):
+    '''
+    def observe(self, current_directive, aggregate, working_memory, current_focus, emotional_state):
         """
         Determines if the input requires reasoning 
         or 
         a simple answer and provides meta-cognitive oversight.
         """
 
-        print(f"Observe Context:\n\033[0;37m{self.context}\n======\n")
+        print(f"Observe Context:\n\033[0;37m{self.context}\n======\n{aggregate}\n======\nWorking Memory:\n{working_memory}\n======\nFocus:\n{current_focus}\n======\nEmotional State:\n{emotional_state}\n======\n")
 
         observation_prompt = self.prompt_manager.get_observation_prompt(
             current_directive,

@@ -59,14 +59,14 @@ class AriaCore:
         sorted_signals = sorted(self.environmental_signals, key=lambda s: (-s["priority"], s["timestamp"]))
         # Remove processed signals from the queue
         # Aggregate signals into a parsed format ready to be sent to the LLM
-        
+        prompt_insert = str(sorted_signals)  # Convert to string for LLM input
         # This could be a JSON object that feels like a document
         # For example, user input: "What's the weather like?"
         # System event: "New data available from sensor X"  
         # Current time: "2023-10-01T12:00:00Z"
 
         # For now, just return the sorted list
-        return sorted_signals
+        return prompt_insert
     
     def get_mind_state(self) -> MindState:
         """Current snapshot of Aria's mind"""
@@ -157,7 +157,8 @@ class AriaCore:
                 # Aggregate Signals
                 aggregate = self.aggregate_signals()
                 # Observe
-                observation = self.substrate.observe(current_directive)
+                observation = self.substrate.observe(current_directive, aggregate, self.working_memory, self.current_focus, self.emotional_state
+                                                     )
                 # Response
                 response = self.substrate.execute_action(observation)
                 # Reflect
