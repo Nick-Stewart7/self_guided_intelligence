@@ -191,7 +191,7 @@ class PromptManager:
             """
         }
     
-    def get_observation_prompt(self, current_directive, context, memory):
+    def get_observation_prompt(self, current_directive, context, memory, aggregate, emotional_state, current_focus):
         return f"""
             <|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
@@ -216,6 +216,15 @@ class PromptManager:
 
             ### Directive:
             {current_directive}
+
+            ### Aggregate Signals:
+            {aggregate}
+
+            ### Emotional State:
+            {emotional_state}
+
+            ### Current Focus:
+            {current_focus}
 
             ### Functions:
             {self.function_definitions}
