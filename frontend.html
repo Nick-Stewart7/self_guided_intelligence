@@ -1,214 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Aria Mind Interface</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #1a1a2e;
-            color: #eee;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            color: #4fc3f7;
-            margin: 0;
-        }
-        
-        .status-panel {
-            background: #16213e;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-left: 4px solid #4fc3f7;
-        }
-        
-        .input-section {
-            background: #16213e;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #4fc3f7;
-            font-weight: 500;
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #333;
-            border-radius: 4px;
-            background: #0f172a;
-            color: #eee;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        button {
-            background: #4fc3f7;
-            color: #0f172a;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
-        
-        button:hover {
-            background: #29b6f6;
-        }
-        
-        button:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-        
-        .response-section {
-            background: #16213e;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .success {
-            color: #4caf50;
-        }
-        
-        .error {
-            color: #f44336;
-        }
-        
-        .loading {
-            color: #ff9800;
-        }
-        
-        .signal-info {
-            font-size: 12px;
-            color: #aaa;
-            margin-top: 10px;
-        }
-        
-        #mindState {
-            font-family: monospace;
-            font-size: 12px;
-            background: #0f172a;
-            padding: 10px;
-            border-radius: 4px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>🧠 Aria Mind Interface</h1>
-        <p>Send environmental signals to Aria's consciousness</p>
-    </div>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #1a1a2e;
+        color: #eee;
+      }
 
-    <div class="status-panel">
-        <h3>Mind State</h3>
-        <div id="mindState">Loading...</div>
-        <button onclick="refreshMindState()">Refresh State</button>
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        color: #4fc3f7;
+        margin: 0;
+      }
+
+      .status-panel {
+        background: #16213e;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-left: 4px solid #4fc3f7;
+      }
+
+      .input-section {
+        background: #16213e;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #4fc3f7;
+        font-weight: 500;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #333;
+        border-radius: 4px;
+        background: #0f172a;
+        color: #eee;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      button {
+        background: #4fc3f7;
+        color: #0f172a;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background: #29b6f6;
+      }
+
+      button:disabled {
+        background: #666;
+        cursor: not-allowed;
+      }
+
+      .response-section {
+        background: #16213e;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+
+      .success {
+        color: #4caf50;
+      }
+
+      .error {
+        color: #f44336;
+      }
+
+      .loading {
+        color: #ff9800;
+      }
+
+      .signal-info {
+        font-size: 12px;
+        color: #aaa;
+        margin-top: 10px;
+      }
+
+      #mindState {
+        font-family: monospace;
+        font-size: 12px;
+        background: #0f172a;
+        padding: 10px;
+        border-radius: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>🧠 Aria Mind Interface</h1>
+      <p>Welcome, Alchemist</p>
     </div>
 
     <div class="input-section">
-        <h3>Send Environmental Signal</h3>
-        <form id="signalForm">
-            <div class="form-group">
-                <label for="signalType">Signal Type:</label>
-                <select id="signalType" required>
-                    <option value="user_message">User Message</option>
-                    <option value="system_event">System Event</option>
-                    <option value="external_data">External Data</option>
-                    <option value="thought_prompt">Thought Prompt</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="content">Message Content:</label>
-                <textarea id="content" placeholder="Enter your message to Aria..." required></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="priority">Priority (1-10):</label>
-                <input type="number" id="priority" min="1" max="10" value="5" required>
-            </div>
-            
-            <button type="submit" id="submitBtn">Send Signal</button>
-        </form>
+      <h3>Send Environmental Signal</h3>
+      <form id="signalForm">
+        <div class="form-group">
+          <label for="signalType">Signal Type:</label>
+          <select id="signalType" required>
+            <option value="user_message">User Message</option>
+            <option value="system_event">System Event</option>
+            <option value="external_data">External Data</option>
+            <option value="thought_prompt">Thought Prompt</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="content">Message Content:</label>
+          <textarea
+            id="content"
+            placeholder="Enter your message to Aria..."
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="priority">Priority (1-10):</label>
+          <input
+            type="number"
+            id="priority"
+            min="1"
+            max="10"
+            value="5"
+            required
+          />
+        </div>
+
+        <button type="submit" id="submitBtn">Send Signal</button>
+      </form>
     </div>
 
     <div class="response-section">
-        <h3>Response</h3>
-        <div id="response">No signals sent yet.</div>
+      <h3>Response</h3>
+      <div id="response">No signals sent yet.</div>
+    </div>
+
+    <div class="status-panel">
+      <h3>Mind State</h3>
+      <div id="mindState">Loading...</div>
+      <button onclick="refreshMindState()">Refresh State</button>
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8000';
-        
-        // Form submission
-        document.getElementById('signalForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const responseDiv = document.getElementById('response');
-            
-            // Get form data
-            const signalData = {
-                type: document.getElementById('signalType').value,
-                content: document.getElementById('content').value,
-                priority: parseInt(document.getElementById('priority').value),
-                metadata: {
-                    timestamp: new Date().toISOString(),
-                    source: 'web_interface'
-                }
-            };
-            
-            // Show loading state
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending...';
-            responseDiv.innerHTML = '<div class="loading">Sending signal to Aria...</div>';
-            
-            try {
-                const response = await fetch(`${API_BASE}/environmental_signal`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(signalData)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                
-                responseDiv.innerHTML = `
+      const API_BASE = "http://localhost:8000";
+
+      // Form submission
+      document
+        .getElementById("signalForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const submitBtn = document.getElementById("submitBtn");
+          const responseDiv = document.getElementById("response");
+
+          // Get form data
+          const signalData = {
+            type: document.getElementById("signalType").value,
+            content: document.getElementById("content").value,
+            priority: parseInt(document.getElementById("priority").value),
+            metadata: {
+              timestamp: new Date().toISOString(),
+              source: "web_interface",
+            },
+          };
+
+          // Show loading state
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Sending...";
+          responseDiv.innerHTML =
+            '<div class="loading">Sending signal to Aria...</div>';
+
+          try {
+            const response = await fetch(`${API_BASE}/environmental_signal`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(signalData),
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            responseDiv.innerHTML = `
                     <div class="success">✅ Signal sent successfully!</div>
                     <div class="signal-info">
                         Signal ID: ${result.signal_id}<br>
@@ -216,58 +233,68 @@
                         Message: ${result.message}
                     </div>
                 `;
-                
-                // Clear the form
-                document.getElementById('content').value = '';
-                
-                // Refresh mind state after sending signal
-                setTimeout(refreshMindState, 1000);
-                
-            } catch (error) {
-                responseDiv.innerHTML = `
+
+            // Clear the form
+            document.getElementById("content").value = "";
+
+            // Refresh mind state after sending signal
+            setTimeout(refreshMindState, 1000);
+          } catch (error) {
+            responseDiv.innerHTML = `
                     <div class="error">❌ Error sending signal:</div>
                     <div class="signal-info">${error.message}</div>
                 `;
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Send Signal';
-            }
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Send Signal";
+          }
         });
-        
-        // Mind state functions
-        async function refreshMindState() {
-            const mindStateDiv = document.getElementById('mindState');
-            
-            try {
-                mindStateDiv.innerHTML = 'Loading...';
-                
-                const response = await fetch(`${API_BASE}/mind_state`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const mindState = await response.json();
-                
-                mindStateDiv.innerHTML = `
-                    <strong>Current Focus:</strong> ${mindState.current_focus || 'None'}<br>
-                    <strong>Pending Signals:</strong> ${mindState.environmental_signals_pending}<br>
-                    <strong>Last Updated:</strong> ${new Date(mindState.last_updated).toLocaleString()}<br>
-                    <strong>Emotional State:</strong> ${JSON.stringify(mindState.emotional_state, null, 2)}<br>
+
+      // Mind state functions
+      async function refreshMindState() {
+        const mindStateDiv = document.getElementById("mindState");
+
+        try {
+          mindStateDiv.innerHTML = "Loading...";
+
+          const response = await fetch(`${API_BASE}/mind_state`);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const mindState = await response.json();
+
+          mindStateDiv.innerHTML = `
+                    <strong>Current Focus:</strong> ${
+                      mindState.current_focus || "None"
+                    }<br>
+                    <strong>Pending Signals:</strong> ${
+                      mindState.environmental_signals_pending
+                    }<br>
+                    <strong>Last Updated:</strong> ${new Date(
+                      mindState.last_updated
+                    ).toLocaleString()}<br>
+                    <strong>Emotional State:</strong> ${JSON.stringify(
+                      mindState.emotional_state,
+                      null,
+                      2
+                    )}<br>
                     <strong>Recent Thoughts:</strong><br>
-                    ${mindState.recent_thoughts.map(thought => `• ${thought}`).join('<br>')}
+                    ${mindState.recent_thoughts
+                      .map((thought) => `• ${thought}`)
+                      .join("<br>")}
                 `;
-                
-            } catch (error) {
-                mindStateDiv.innerHTML = `<div class="error">Error loading mind state: ${error.message}</div>`;
-            }
+        } catch (error) {
+          mindStateDiv.innerHTML = `<div class="error">Error loading mind state: ${error.message}</div>`;
         }
-        
-        // Auto-refresh mind state every 5 seconds
-        setInterval(refreshMindState, 5000);
-        
-        // Initial load
-        refreshMindState();
+      }
+
+      // Auto-refresh mind state every 5 seconds
+      setInterval(refreshMindState, 5000);
+
+      // Initial load
+      refreshMindState();
     </script>
-</body>
+  </body>
 </html>

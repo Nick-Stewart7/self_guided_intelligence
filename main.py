@@ -284,7 +284,7 @@ class AriaCore:
     
     async def natural_pause(self):
         """Aria's natural rhythm - not every thought is instant"""
-        await asyncio.sleep(2)  # Adjust based on how fast you want Aria to think
+        await asyncio.sleep(20)  # Adjust based on how fast you want Aria to think
     
     async def mind_loop(self):
         """Aria's continuous consciousness"""
@@ -302,11 +302,10 @@ class AriaCore:
                 # Observe
                 observation = self.observe(current_directive, aggregate, self.current_focus, self.emotional_state)
                 # Response
-                # response = self.execute_action(observation)
+                response = self.execute_action(observation)
                 # Reflect
-                # reflection = self.reflect(observation, response)
-                # print (f"\033[0;36m{reflection}\n")
-                # current_directive = self.substrate.memory.session_memory["next_directive"]
+                reflection = self.reflect(observation, response)
+                current_directive = self.substrate.memory.session_memory["next_directive"]
                 # Natural pause
                 await self.natural_pause()
                 
