@@ -301,10 +301,15 @@ class AriaCore:
                 aggregate = self.aggregate_signals()
                 # Observe
                 observation = self.observe(current_directive, aggregate, self.current_focus, self.emotional_state)
+                await self.natural_pause()
                 # Response
                 response = self.execute_action(observation)
+                print(f"\033[1;34mResponse:\n{response}\n")
+                await self.natural_pause()
                 # Reflect
                 reflection = self.reflect(observation, response)
+                print(f"\033[1;35mReflection:\n{reflection}\n")
+                await self.natural_pause()
                 current_directive = self.substrate.memory.session_memory["next_directive"]
                 # Natural pause
                 await self.natural_pause()
