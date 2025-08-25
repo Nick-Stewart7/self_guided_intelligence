@@ -9,7 +9,7 @@ class MemorySystem:
             "current_user_input": "",
             "conversation_history": [],
             "past_actions": [],
-            "living_context": "",
+            "current_context": "",
             "journal":[],
             "next_directive": "",
             "keyframes": [],
@@ -32,14 +32,14 @@ class MemorySystem:
     
     def store_observation(self, observation, step):
         self.session_memory["past_actions"].append({"step": step, "action": "observation"})
-        self.session_memory["living_context"] = observation["living_context"]
+        self.session_memory["current_context"] = observation["current_context"]
         self.session_memory["next_directive"] = observation["next_directive"]
 
     def store_action(self, action, step):
         self.session_memory["past_actions"].append({"step": step, "action": action})
 
     def store_reflection(self, reflection):
-        self.session_memory["living_context"] = reflection["updated_living_context"]
+        self.session_memory["current_context"] = reflection["updated_context"]
         self.session_memory["journal"].append(reflection["journal_entry"])
         self.session_memory["keyframes"].append(reflection["keyframes"])
         return reflection

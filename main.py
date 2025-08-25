@@ -32,7 +32,7 @@ class MindState(BaseModel):
 class AriaCore:
     def __init__(self):
         self.environmental_signals = deque()
-        self.current_focus = None
+        self.current_directive = "No current directive. System in initial starting state."
         self.recent_thoughts = deque(maxlen=10)  # Keep last 10 thoughts
         self.emotional_state = {"curiosity": 0.5, "focus": 0.7}
         self.running = False
@@ -43,30 +43,27 @@ class AriaCore:
         self.tools = ToolSystem()
         self.step = 0
         self.context = self.memory.get_context()
-        self.thoughts = []
+        self.time = time.time()
 
-    def observe(self, current_directive, aggregate, current_focus, emotional_state):
+    def observe(self, current_directive, aggregate, emotional_state):
         """
-        Determines if the input requires reasoning 
-        or 
-        a simple answer and provides meta-cognitive oversight.
+        Observe phase - Aria notices her internal state and environment then she decides her next action.
         """
-
-        print(f"Observe Context:\n\033[0;37m{self.context}\n======\n{aggregate}\n======\nFocus:\n{current_focus}\n======\nEmotional State:\n{emotional_state}\n======\n")
 
         observation_prompt = self.prompt_manager.get_observation_prompt(
             current_directive,
             self.context,
             self.memory.session_memory,
             aggregate,
-            emotional_state,
-            current_focus
+            emotional_state
         )
-        print(f"\033[1;31m{observation_prompt}")
 
+        # Debug log
+        print(f"\033[1;31m{observation_prompt}")
+        
+        # Call LLM to get observation
         observation = self.call_llm(observation_prompt)
         print(f"\033[0;36mMeta-Observation:\n{observation}\n")
-        self.thoughts.append(observation)
 
         # Format for reading
         parsed_observation = json.loads(observation.strip())
@@ -74,49 +71,38 @@ class AriaCore:
         # Store in memory so Aria "remembers" her past evaluations
         self.memory.store_observation(parsed_observation, self.step)
 
+        # Increase step count
         self.step += 1
 
         return parsed_observation
 
     def execute_action(self, observation):
-        '''
-        Open-Ended Creativity Sparks
+        """
+        Action phase - Aria executes based on her observation.
+        """
 
-        Introspective Audits
-
-        Knowledge Integration Sweeps
-
-        Thought Refinement
-
-        Dreaming Mode (wild speculative exploration)
-        '''
         ### 🧠 AI DECIDES WHAT TO DO NEXT:
         decision = observation["next_action"]
         print(f"\033[1;32m{decision}")
-        #parameters = observation["parameters"]
-        response = ""
 
-        response = self.run_action(self.memory.session_memory["next_directive"], decision)
-        return response
-
-    def run_action(self, directive, action):
-        print(f"REASONING CONTEXT:\n\033[0;37m{self.context}\n======\n")
+        directive = self.memory.session_memory["next_directive"]
 
         prompt = self.prompt_manager.get_prompt(
-            action,
+            decision,
             directive,
             self.context,
             self.memory.session_memory
         )
+
         print(f"\033[1;31m{prompt}")
 
         output = self.call_llm(prompt)
-        print(f"\033[1;30mReasoning:\n{output}\n")
-        self.thoughts.append(output)
-        self.memory.store_action(action, self.step)
+        print(f"\033[1;30mAction Execution:\n{output}\n")
+        self.memory.store_action(decision, self.step)
 
         self.step += 1
         return output
+
 
     def reflect(self, observation, response):
 
@@ -129,7 +115,7 @@ class AriaCore:
         print(f"\033[1;37m{reflection_prompt}")
 
         reflection_output = self.call_llm(reflection_prompt)
-
+        print(f"\033[1;37mReflection:\n{reflection_output}\n")
         reflection = json.loads(reflection_output.strip())
 
         self.memory.store_reflection(reflection)
@@ -214,84 +200,22 @@ class AriaCore:
     def get_mind_state(self) -> MindState:
         """Current snapshot of Aria's mind"""
         return MindState(
-            current_focus=self.current_focus,
+            current_focus=self.current_directive,
             working_memory=self.memory.session_memory,
             recent_thoughts=list(self.recent_thoughts),
             environmental_signals_pending=len(self.environmental_signals),
             last_updated=self.last_updated,
             emotional_state=self.emotional_state
         )
-    
-    def observe_environment(self):
-        """Aria's observation phase - she decides what to pay attention to"""
-        observations = {
-            "internal_state": self.memory.session_memory,
-            "environmental_signals": list(self.environmental_signals),
-            "current_focus": self.current_focus,
-            "emotional_state": self.emotional_state
-        }
-        return observations
-    
-    async def reason_about_attention(self, observations):
-        """Aria decides what deserves her attention right now"""
-        # This is where your LLM reasoning happens
-        # For now, simplified logic:
-        
-        # Check if there are high-priority environmental signals
-        urgent_signals = [s for s in observations["environmental_signals"] 
-                         if s.get("priority", 1) > 7]
-        
-        if urgent_signals and self.emotional_state.get("focus", 0) < 0.8:
-            return {"action": "process_urgent_signal", "target": urgent_signals[0]}
-        elif self.current_focus:
-            return {"action": "continue_current_focus"}
-        elif observations["environmental_signals"]:
-            return {"action": "process_next_signal"}
-        else:
-            return {"action": "self_directed_thinking"}
-    
-    async def execute_action(self, decision):
-        """Aria acts on her decision"""
-        if decision["action"] == "process_urgent_signal":
-            signal = decision["target"]
-            self.environmental_signals.remove(signal)
-            thought = f"Processing urgent signal: {signal['type']}"
-            self.recent_thoughts.append(thought)
-            self.current_focus = f"Urgent: {signal['content'][:50]}..."
-        
-        elif decision["action"] == "process_next_signal":
-            if self.environmental_signals:
-                signal = self.environmental_signals.popleft()
-                thought = f"Noticed: {signal['type']} - {signal['content'][:100]}"
-                self.recent_thoughts.append(thought)
-                self.current_focus = f"Processing: {signal['content'][:50]}..."
-        
-        elif decision["action"] == "self_directed_thinking":
-            thought = "Engaging in self-directed contemplation..."
-            self.recent_thoughts.append(thought)
-            self.current_focus = "Deep thinking..."
-        
-        self.last_updated = datetime.now()
-        return decision["action"]
-    
-    def reflect_on_action(self, action):
-        """Aria reflects on what just happened"""
-        # Update emotional state, working memory, etc.
-        if "urgent" in action:
-            self.emotional_state["focus"] = min(1.0, self.emotional_state["focus"] + 0.1)
-        else:
-            self.emotional_state["focus"] = max(0.0, self.emotional_state["focus"] - 0.02)
-    
+
     async def natural_pause(self):
         """Aria's natural rhythm - not every thought is instant"""
         await asyncio.sleep(20)  # Adjust based on how fast you want Aria to think
-    
+
     async def mind_loop(self):
         """Aria's continuous consciousness"""
         self.running = True
         cycle_count = 0
-
-        current_directive = "Start Thinking"
         
         while self.running:
             try:
@@ -300,7 +224,7 @@ class AriaCore:
                 # Aggregate Signals
                 aggregate = self.aggregate_signals()
                 # Observe
-                observation = self.observe(current_directive, aggregate, self.current_focus, self.emotional_state)
+                observation = self.observe(self.current_directive, aggregate, self.emotional_state)
                 await self.natural_pause()
                 # Response
                 response = self.execute_action(observation)
@@ -310,9 +234,13 @@ class AriaCore:
                 reflection = self.reflect(observation, response)
                 print(f"\033[1;35mReflection:\n{reflection}\n")
                 await self.natural_pause()
-                current_directive = self.substrate.memory.session_memory["next_directive"]
-                # Natural pause
+
+                # Update Directive
+                self.current_directive = self.memory.session_memory["next_directive"]
+
                 await self.natural_pause()
+
+                break
                 
                 # Log for debugging (remove in production)
                 if cycle_count % 10 == 0:
@@ -385,7 +313,7 @@ async def root():
         "message": "Aria Mind API",
         "status": "Aria is thinking..." if aria.running else "Aria is sleeping",
         "pending_signals": len(aria.environmental_signals),
-        "current_focus": aria.current_focus
+        "current_directive": aria.current_directive,
     }
 
 # Additional debugging endpoints

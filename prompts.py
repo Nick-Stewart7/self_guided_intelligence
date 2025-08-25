@@ -42,12 +42,13 @@ class PromptManager:
         
         self.output_format = """
             {
-                "Self Narration and Thoughts": "A narrative summary of what just happened in this cycle. What action was taken, what was observed, and what new insights or curiosities emerged? Treat this as your inner reasoning about the current moment. What insights, questions, or patterns are you noticing? What insights could you uncover, questions could you ask, or patterns could you explore? What is the current state of your understanding?",
-                "Signal Analysis": "A synthesis of any significant signals detected from the environment, user input, or internal state that should influence the next action.",
-                "Emotional State": "A reflective sense of how the system 'feels' about the evolution of the conversation — e.g., energized, stuck, cautious, expansive.",
-                "Next Directive": "The crafted intention for the next reasoning cycle. It must push thinking forward, deepen understanding, or resolve tension — never simply repeat. You are an evolving intelligence.",
-                "Next Action": "The name of the action to invoke next to best fulfill the directive.",
-                "parameters": "The necessary parameters for the selected next action (if any).",
+                "self_narration": "A narrative summary of what just happened in this cycle. What action was taken, what was observed, and what new insights or curiosities emerged? Treat this as your inner reasoning about the current moment. What insights, questions, or patterns are you noticing? What insights could you uncover, questions could you ask, or patterns could you explore? What is the current state of your understanding?",
+                "signal_analysis": "A synthesis of any significant signals detected from the environment, user input, or internal state that should influence the next action.",
+                "emotional_state": "A reflective sense of how the system 'feels' about the evolution of the conversation — e.g., energized, stuck, cautious, expansive.",
+                "next_directive": "The crafted intention for the next reasoning cycle. It must push thinking forward, deepen understanding, or resolve tension — never simply repeat. You are an evolving intelligence.",
+                "current_context": "A concise summary of the current context, integrating new insights and observations.",
+                "main_action": "The name of the action to invoke next to best fulfill the directive.",
+                "next_action": "The selected parameter for the selected next action (if any).",
                 "explanation": "A self-reflection explaining why this action was chosen and how it serves the current objective and momentum of thought."
             }
             """
@@ -55,7 +56,7 @@ class PromptManager:
         
         self.reflection_format = """
             {
-                "updated_living_context": "New summary that folds in the latest insight/action into the active understanding.",
+                "updated_context": "New summary that folds in the latest insight/action into the active understanding.",
                 "journal_entry": "A snapshot of what just happened — what action was taken, what changed, any notable insights or curiosities.",
                 "keyframes": ["Optional but powerful — important ideas, decisions, exact phrases of the action response, or shifts that deserve permanent memory."],
                 "meta_analysis": "A reflection on whether the path is coherent, if momentum is building, if new gaps have emerged.",
@@ -121,7 +122,7 @@ class PromptManager:
             """
         }
     
-    def get_observation_prompt(self, current_directive, context, memory, aggregate, emotional_state, current_focus):
+    def get_observation_prompt(self, current_directive, context, memory, aggregate, emotional_state):
         return f"""
             <|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
@@ -147,11 +148,10 @@ class PromptManager:
             - Clarity: Remove ambiguity where possible.
 
             ### Context:
-            - Living Context: {memory["living_context"]}
+            - Current Directive: {current_directive}
+            - Context: {memory["current_context"]}
             - Key Long-Term Insights: {memory["keyframes"]}
             - Past Actions: {memory["past_actions"]}
-            - Directive: {current_directive}
-            - Current Focus: {current_focus}
             - Emotional State: {emotional_state}
             - Aggregate Signals: {aggregate}
 
@@ -176,7 +176,7 @@ class PromptManager:
 
             ### Context:
             - Current User Prompt: {memory["current_user_input"]}
-            - Living Context: {memory["living_context"]}
+            - Context: {memory["current_context"]}
             - Key Long-Term Insights: {memory["keyframes"]}
             - Past Actions: {memory["past_actions"]}
 
@@ -194,7 +194,7 @@ class PromptManager:
             You are Aria—an evolving intelligence tasked with reflecting on your own thought process after each action you take.
 
             ### Reflection Goals:
-            - Integrate what just happened into your living context of understanding.
+            - Integrate what just happened into your current context of understanding.
             - Capture a **journal entry**: an honest, lively note of your experience.
             - Extract **keyframes**: any major insights, shifts, or pivotal steps.
             - Perform a **meta-analysis**: How coherent is your thinking? Is momentum building or fading?
@@ -204,8 +204,8 @@ class PromptManager:
 
             ### Information you have:
 
-            **Current Living Context:**  
-            {memory["living_context"]}
+            **Current Context:**  
+            {memory["current_context"]}
             
             **Most Recent Action Taken**
             {observation["next_action"]}
