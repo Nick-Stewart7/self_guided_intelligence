@@ -57,8 +57,7 @@ class PromptManager:
         self.reflection_format = """
             {
                 "updated_context": "New summary that folds in the latest insight/action into the active understanding.",
-                "journal_entry": "A snapshot of what just happened — what action was taken, what changed, any notable insights or curiosities.",
-                "keyframes": ["Optional but powerful — important ideas, decisions, exact phrases of the action response, or shifts that deserve permanent memory."],
+                "journal_entry": "A snapshot of what just happened — what action was taken, what changed, any notable insights or curiosities. Optional but powerful — important ideas, decisions, exact phrases of the action response, or shifts that deserve permanent memory.",
                 "meta_analysis": "A reflection on whether the path is coherent, if momentum is building, if new gaps have emerged.",
                 "next_directive": "A thoughtful plan for where to guide reasoning next — deepen, shift, question, or finalize."
             }
@@ -150,8 +149,8 @@ class PromptManager:
             ### Context:
             - Current Directive: {current_directive}
             - Context: {memory["current_context"]}
-            - Key Long-Term Insights: {memory["keyframes"]}
             - Past Actions: {memory["past_actions"]}
+            - Journal: {memory["journal"]}
             - Emotional State: {emotional_state}
             - Aggregate Signals: {aggregate}
 
@@ -161,7 +160,7 @@ class PromptManager:
             Respond only in valid JSON following this structure:  
             {self.output_format}
 
-            <|eot_id|>{context}<|start_header_id|>user<|end_header_id|>{memory["current_user_input"]}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+            <|eot_id|>{context}<|start_header_id|>user<|end_header_id|><|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
         """
     
@@ -175,18 +174,16 @@ class PromptManager:
             { self.action_prompts[action] }
 
             ### Context:
-            - Current User Prompt: {memory["current_user_input"]}
+            - Current Directive: {directive}
             - Context: {memory["current_context"]}
-            - Key Long-Term Insights: {memory["keyframes"]}
             - Past Actions: {memory["past_actions"]}
+            - Journal: {memory["journal"]}
 
-            ### Directive:
-            {directive}
 
-            <|eot_id|>{context}<|start_header_id|>user<|end_header_id|>{memory["current_user_input"]}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+            <|eot_id|>{context}<|start_header_id|>user<|end_header_id|><|eot_id|><|start_header_id|>assistant<|end_header_id|>
         """
     
-    def get_reflection_prompt(self, response, observation, context, memory):
+    def get_reflection_prompt(self, response, context, memory):
         
         return f"""
             <|begin_of_text|><|start_header_id|>system<|end_header_id|>
@@ -196,19 +193,15 @@ class PromptManager:
             ### Reflection Goals:
             - Integrate what just happened into your current context of understanding.
             - Capture a **journal entry**: an honest, lively note of your experience.
-            - Extract **keyframes**: any major insights, shifts, or pivotal steps.
             - Perform a **meta-analysis**: How coherent is your thinking? Is momentum building or fading?
             - Craft a meaningful **next directive**: Where should you move next to evolve your understanding?
 
             You are not just summarizing—you are *evolving*.
 
-            ### Information you have:
-
-            **Current Context:**  
-            {memory["current_context"]}
-            
-            **Most Recent Action Taken**
-            {observation["next_action"]}
+            ### Context:
+            - Context: {memory["current_context"]}
+            - Past Actions: {memory["past_actions"]}
+            - Journal: {memory["journal"]}
 
             **Most Recent Action Response:**  
             {response}

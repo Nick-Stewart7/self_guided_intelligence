@@ -1,4 +1,4 @@
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -63,7 +63,6 @@ class AriaCore:
         
         # Call LLM to get observation
         observation = self.call_llm(observation_prompt)
-        print(f"\033[0;36mMeta-Observation:\n{observation}\n")
 
         # Format for reading
         parsed_observation = json.loads(observation.strip())
@@ -97,25 +96,22 @@ class AriaCore:
         print(f"\033[1;31m{prompt}")
 
         output = self.call_llm(prompt)
-        print(f"\033[1;30mAction Execution:\n{output}\n")
         self.memory.store_action(decision, self.step)
 
         self.step += 1
         return output
 
 
-    def reflect(self, observation, response):
+    def reflect(self, response):
 
         reflection_prompt = self.prompt_manager.get_reflection_prompt(
             response,
-            observation,
             self.context,
             self.memory.session_memory
         )
         print(f"\033[1;37m{reflection_prompt}")
 
         reflection_output = self.call_llm(reflection_prompt)
-        print(f"\033[1;37mReflection:\n{reflection_output}\n")
         reflection = json.loads(reflection_output.strip())
 
         self.memory.store_reflection(reflection)
@@ -225,13 +221,14 @@ class AriaCore:
                 aggregate = self.aggregate_signals()
                 # Observe
                 observation = self.observe(self.current_directive, aggregate, self.emotional_state)
+                print(f"\033[1;36mObservation:\n{str(observation)}\n")
                 await self.natural_pause()
                 # Response
                 response = self.execute_action(observation)
                 print(f"\033[1;34mResponse:\n{response}\n")
                 await self.natural_pause()
                 # Reflect
-                reflection = self.reflect(observation, response)
+                reflection = self.reflect(response)
                 print(f"\033[1;35mReflection:\n{reflection}\n")
                 await self.natural_pause()
 
@@ -240,13 +237,10 @@ class AriaCore:
 
                 await self.natural_pause()
 
-                break
-                
-                # Log for debugging (remove in production)
-                if cycle_count % 10 == 0:
-                    print(f"Aria cycle {cycle_count}: {self.current_focus}")
+                self.stop_mind()  # For demo purposes, break after one full cycle
+                exit()
                     
-            except Exception as e:
+            except (RuntimeError, ValueError, KeyError) as e:
                 print(f"Error in mind loop: {e}")
                 await asyncio.sleep(5)  # Recovery pause
     

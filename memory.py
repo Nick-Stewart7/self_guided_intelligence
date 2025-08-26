@@ -1,19 +1,14 @@
 # memory.py
-import boto3, json, random
+import boto3
 
 class MemorySystem:
     def __init__(self):
-        random_integer = random.randint(1000, 2000)
         self.session_memory = {
-            "chain_id": random_integer,
-            "current_user_input": "",
             "conversation_history": [],
             "past_actions": [],
             "current_context": "",
-            "journal":[],
             "next_directive": "",
-            "keyframes": [],
-            "unresolved_paths": []
+            "journal": []
         }
         self.long_term_memory_api = boto3.client("s3")  # Replace with actual AWS API
     
@@ -41,5 +36,5 @@ class MemorySystem:
     def store_reflection(self, reflection):
         self.session_memory["current_context"] = reflection["updated_context"]
         self.session_memory["journal"].append(reflection["journal_entry"])
-        self.session_memory["keyframes"].append(reflection["keyframes"])
+        self.session_memory["next_directive"] = reflection["next_directive"]
         return reflection
