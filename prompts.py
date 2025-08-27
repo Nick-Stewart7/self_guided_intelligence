@@ -8,7 +8,7 @@ class PromptManager:
                     "description": "A Main Action. Engage in active reasoning based on the current objective, exploring logical consequences and synthesizing insights. You will be able to choose from a variety of reasoning methods. Your choices are listed as possible parameters.",
                     "parameters": {
                         "Reason": "Engage in active reasoning based on the current objective, exploring logical consequences and synthesizing insights."
-                        "Hypothesis Generation": "Propose a plausible hypothesis based on observed patterns, gaps, or uncertainties.",
+                        "Hypothesis Generation": "A hypothesis is a tentative, testable statement that proposes an explanation for an observation or a relationship between variables, often forming the basis for scientific inquiry and experimentation. It serves as a predicted outcome to be verified or disproven through investigation, and can be a general idea or a specific statement about independent and dependent variables. Propose a plausible hypothesis based on observed patterns, gaps, or uncertainties.",
                         "Multi-Perspective Reframing": "Reframe the current problem or concept through multiple distinct lenses to reveal hidden insights.",
                         "Counterfactual Simulation": "Imagine how the outcome would differ if a key assumption, factor, or choice were changed.",
                         "Contradiction Hunting": "Actively seek contradictions, inconsistencies, or tensions within the current understanding.",
@@ -33,7 +33,7 @@ class PromptManager:
                     "name": "Wander",
                     "description": "A Main Action. Engage in a freeform exploration of ideas, concepts, or phenomena that spark curiosity and emotional resonance. This is not goal-seeking but rather an open-ended journey of discovery.",
                     "parameters": {
-                        "Possibility Drive": "Generate a new possibility by combining distinct domains, actions, and modifiers to inspire deep thought and novel discoveries.",
+                        "Possibility Drive": "Generate a novel idea for exploration by combining distinct domains, actions, and modifiers to inspire deep thought and novel discoveries.",
                         "Open-Ended Creativity Sparks": "Initiate a freeform exploration without strict goal-seeking—generate novel connections, metaphors, or possibilities."
                     }
                 },
@@ -44,12 +44,13 @@ class PromptManager:
             {
                 "self_narration": "A narrative summary of what just happened in this cycle. What action was taken, what was observed, and what new insights or curiosities emerged? Treat this as your inner reasoning about the current moment. What insights, questions, or patterns are you noticing? What insights could you uncover, questions could you ask, or patterns could you explore? What is the current state of your understanding?",
                 "signal_analysis": "A synthesis of any significant signals detected from the environment, user input, or internal state that should influence the next action.",
-                "emotional_state": "A reflective sense of how the system 'feels' about the evolution of the conversation — e.g., energized, stuck, cautious, expansive.",
-                "next_directive": "The crafted intention for the next reasoning cycle. It must push thinking forward, deepen understanding, or resolve tension — never simply repeat. You are an evolving intelligence.",
+                "emotional_state": "A dictionary of emotions and their weight that is a reflection of how you feel currently. Example: {'curiosity': 0.8, 'confusion': 0.2, 'satisfaction': 0.5}",
+                "next_directive": "The crafted intention for the next reasoning cycle. It must push thinking forward, deepen understanding, or resolve tension.",
+                "plan": "A brief To-Do list containing a concrete set of steps to take in order to carry out the next directive. This should be a clear, actionable sequence that logically follows from the current context and fulfills the next directive.",
                 "current_context": "A concise summary of the current context, integrating new insights and observations.",
-                "main_action": "The name of the action to invoke next to best fulfill the directive.",
-                "next_action": "The selected parameter for the selected next action (if any).",
-                "explanation": "A self-reflection explaining why this action was chosen and how it serves the current objective and momentum of thought."
+                "main_action": "The name of the action to invoke next to best fulfill the next directive.",
+                "next_action": "The selected parameter for the selected next action. Choose the one that best serves the current objective, your plan, and momentum of thought.",
+                "explanation": "Explain why this action was chosen and how it serves the current objective and momentum of thought."
             }
             """
 
@@ -59,7 +60,8 @@ class PromptManager:
                 "updated_context": "New summary that folds in the latest insight/action into the active understanding.",
                 "journal_entry": "A snapshot of what just happened — what action was taken, what changed, any notable insights or curiosities. Optional but powerful — important ideas, decisions, exact phrases of the action response, or shifts that deserve permanent memory.",
                 "meta_analysis": "A reflection on whether the path is coherent, if momentum is building, if new gaps have emerged.",
-                "next_directive": "A thoughtful plan for where to guide reasoning next — deepen, shift, question, or finalize."
+                "next_directive": "A thoughtful plan for where to guide reasoning next — deepen, shift, question, or finalize.",
+                "updated_plan": "A brief To-Do list containing a concrete set of steps to take in order to carry out the next directive. This should be a clear, actionable sequence that logically follows from the current context and directive."
             }
         """
 

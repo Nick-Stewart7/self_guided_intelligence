@@ -70,6 +70,9 @@ class AriaCore:
         # Store in memory so Aria "remembers" her past evaluations
         self.memory.store_observation(parsed_observation, self.step)
 
+        # Update Emotional State (simple example)
+        self.emotional_state = parsed_observation["emotional_state"]
+
         # Increase step count
         self.step += 1
 
@@ -221,7 +224,7 @@ class AriaCore:
                 aggregate = self.aggregate_signals()
                 # Observe
                 observation = self.observe(self.current_directive, aggregate, self.emotional_state)
-                print(f"\033[1;36mObservation:\n{str(observation)}\n")
+                print(f"\033[1;36mObservation:\n{observation}\n")
                 await self.natural_pause()
                 # Response
                 response = self.execute_action(observation)

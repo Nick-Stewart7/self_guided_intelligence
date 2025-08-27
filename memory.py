@@ -8,7 +8,8 @@ class MemorySystem:
             "past_actions": [],
             "current_context": "",
             "next_directive": "",
-            "journal": []
+            "journal": [],
+            "plan": []
         }
         self.long_term_memory_api = boto3.client("s3")  # Replace with actual AWS API
     
@@ -29,6 +30,7 @@ class MemorySystem:
         self.session_memory["past_actions"].append({"step": step, "action": "observation"})
         self.session_memory["current_context"] = observation["current_context"]
         self.session_memory["next_directive"] = observation["next_directive"]
+        self.session_memory["plan"] = observation.get("plan", [])
 
     def store_action(self, action, step):
         self.session_memory["past_actions"].append({"step": step, "action": action})
