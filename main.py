@@ -85,7 +85,6 @@ class AriaCore:
 
         ### 🧠 AI DECIDES WHAT TO DO NEXT:
         decision = observation["next_action"]
-        print(f"\033[1;32m{decision}")
 
         directive = self.memory.session_memory["next_directive"]
 
@@ -112,7 +111,7 @@ class AriaCore:
             self.context,
             self.memory.session_memory
         )
-        print(f"\033[1;37m{reflection_prompt}")
+        print(f"\033[1;31m{reflection_prompt}")
 
         reflection_output = self.call_llm(reflection_prompt)
         reflection = json.loads(reflection_output.strip())
@@ -232,7 +231,7 @@ class AriaCore:
                 await self.natural_pause()
                 # Reflect
                 reflection = self.reflect(response)
-                print(f"\033[1;35mReflection:\n{reflection}\n")
+                print(f"\033[1;32mReflection:\n{reflection}\n")
                 await self.natural_pause()
 
                 # Update Directive
