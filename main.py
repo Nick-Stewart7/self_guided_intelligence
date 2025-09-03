@@ -92,7 +92,8 @@ class AriaCore:
             decision,
             directive,
             self.context,
-            self.memory.session_memory
+            self.memory.session_memory,
+            self.emotional_state
         )
 
         print(f"\033[1;31m{prompt}")
@@ -109,7 +110,8 @@ class AriaCore:
         reflection_prompt = self.prompt_manager.get_reflection_prompt(
             response,
             self.context,
-            self.memory.session_memory
+            self.memory.session_memory,
+            self.emotional_state
         )
         print(f"\033[1;31m{reflection_prompt}")
 
@@ -208,7 +210,7 @@ class AriaCore:
 
     async def natural_pause(self):
         """Aria's natural rhythm - not every thought is instant"""
-        await asyncio.sleep(20)  # Adjust based on how fast you want Aria to think
+        await asyncio.sleep(30)  # Adjust based on how fast you want Aria to think
 
     async def mind_loop(self):
         """Aria's continuous consciousness"""
@@ -218,7 +220,8 @@ class AriaCore:
         while self.running:
             try:
                 cycle_count += 1
-
+                print(f"\033[1;35m--- Mind Cycle {cycle_count} ---\n")
+                await self.natural_pause()
                 # Aggregate Signals
                 aggregate = self.aggregate_signals()
                 # Observe
@@ -236,11 +239,6 @@ class AriaCore:
 
                 # Update Directive
                 self.current_directive = self.memory.session_memory["next_directive"]
-
-                await self.natural_pause()
-
-                self.stop_mind()  # For demo purposes, break after one full cycle
-                exit()
                     
             except (RuntimeError, ValueError, KeyError) as e:
                 print(f"Error in mind loop: {e}")
