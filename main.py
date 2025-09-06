@@ -63,7 +63,7 @@ class AriaCore:
         
         # Call LLM to get observation
         observation = self.call_llm(observation_prompt)
-
+        print(f"llm returned...{observation}")
         # Format for reading
         parsed_observation = json.loads(observation.strip())
 
@@ -88,8 +88,10 @@ class AriaCore:
 
         directive = self.memory.session_memory["next_directive"]
 
+        plan = self.memory.session_memory["plan"]
+
         prompt = self.prompt_manager.get_prompt(
-            decision,
+            plan[0] if plan else "No specific plan.",
             directive,
             self.context,
             self.memory.session_memory,
@@ -97,8 +99,9 @@ class AriaCore:
         )
 
         print(f"\033[1;31m{prompt}")
-
+        print("call llm...")
         output = self.call_llm(prompt)
+        print("llm returned...")
         self.memory.store_action(decision, self.step)
 
         self.step += 1
@@ -221,7 +224,6 @@ class AriaCore:
             try:
                 cycle_count += 1
                 print(f"\033[1;35m--- Mind Cycle {cycle_count} ---\n")
-                await self.natural_pause()
                 # Aggregate Signals
                 aggregate = self.aggregate_signals()
                 # Observe

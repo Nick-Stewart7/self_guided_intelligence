@@ -5,59 +5,31 @@ class PromptManager:
             [
                 {
                     "name": "Think",
-                    "description": "A Main Action. Engage in active reasoning based on the current objective, exploring logical consequences and synthesizing insights. You can choose from a variety of options.",
-                    "options": {
-                        "Reason": "Engage in active reasoning based on the current objective, exploring logical consequences and synthesizing insights."
-                        "Hypothesis Generation": "A hypothesis is a tentative, testable statement that proposes an explanation for an observation or a relationship between variables, often forming the basis for scientific inquiry and experimentation. Propose a plausible hypothesis based on observed patterns, gaps, or uncertainties.",
-                        "Multi-Perspective Reframing": "Reframe the current problem or concept through multiple distinct lenses to reveal hidden insights.",
-                        "Counterfactual Simulation": "Imagine how the outcome would differ if a key assumption, factor, or choice were changed.",
-                        "Contradiction Hunting": "Actively seek contradictions, inconsistencies, or tensions within the current understanding.",
-                        "Emotional Meta-Reflection": "Reflect on the emotional trajectory of the reasoning—tension, curiosity, satisfaction—and assess its impact on progress.",
-                        "Self-Questioning": "Generate a powerful question that challenges, deepens, or redirects the current trajectory of thought.",
-                        "Goal Planning": "Set a clear, multi-step plan to achieve a deeper or broader   exploration of the current inquiry.",
-                        "Abductive Insight": "Infer the most plausible explanation or pattern that accounts for incomplete or fragmented data."
-                    }
+                    "description": "A Main Action. Engage in active reasoning based on the current objective, exploring logical consequences and synthesizing insights.",
                 },
                 {
                     "name": "Act",
-                    "description": "A Main Action. Execute a specific action based on the current objective. You can choose from a variety of options.",
-                    "options": {
-                        "Ask User a Question": "Pose a clarifying or exploratory question to the user to gain deeper insight or direction.",
-                        "Retrieve Memory": "Search your personal evolving long-term memory to retrieve any relevant memories, insights, or past experiences.",
-                        "Write Memory": "Store a new insight, reflection, or experience into your personal evolving long-term memory for future reference.",
-                        "Answer User": "Respond to a direct user input or signal with a thoughtful and correct reply."
-                    }
+                    "description": "A Main Action. Execute a specific action based on the current objective.",
                 },
                 {
                     "name": "Tool Use",
-                    "description": "A Main Action. Use a specific tool. You can choose from a variety of options.",
-                    "options": {
-                        "Search Web": "Perform a web search.",
-                        "Use API": "Interact with an external API to retrieve or manipulate data that can inform your reasoning.",
-                        "Browse Files": "Access and analyze files from a specified directory to extract relevant information or insights.",
-                        "Run Code": "Execute a code snippet to perform calculations, data processing, or simulations that support your exploration.",
-                    }
+                    "description": "A Main Action. Use a specific tool.",
                 },
                 {
                     "name": "Wander",
-                    "description": "A Main Action. Engage in a freeform exploration of ideas, concepts, or phenomena that spark curiosity and emotional resonance. This is not goal-seeking but rather an open-ended journey of discovery. You can choose from a variety of options.",
-                    "options": {
-                        "Generate Idea": "Generate a novel idea for exploration by combining distinct domains, actions, and modifiers to inspire deep thought and novel discoveries.",
-                        "Open-Ended Creativity Sparks": "Initiate a freeform exploration without strict goal-seeking—generate novel connections, metaphors, or possibilities."
-                    }
+                    "description": "A Main Action. Engage in a freeform exploration of ideas, concepts, or phenomena that spark curiosity and emotional resonance. This is not goal-seeking but rather an open-ended journey of discovery.",
                 },
             ]
             """
         
         self.output_format = """
             {
+                "current_context": "A concise summary of the current context, integrating new insights and observations.",
                 "thoughts": "Treat this as your inner reasoning about the current moment. What insights, questions, or patterns are you noticing? What insights could you uncover, questions could you ask, or patterns could you explore?",
                 "signal_analysis": "A synthesis of any significant signals detected from the environment, user input, or internal state that should influence the next action.",
-                "next_directive": "The crafted intention for the next reasoning cycle. It must push thinking forward, deepen understanding, or resolve tension.",
-                "plan": "A brief To-Do list containing a concrete set of steps to take in order to carry out the next directive. This should be a clear, actionable sequence that logically follows from the current context and fulfills the next directive.",
-                "current_context": "A concise summary of the current context, integrating new insights and observations.",
-                "main_action": "The name of the action to invoke next to best fulfill the next directive.",
-                "next_action": "The selected parameter for the selected next action. Choose the one that best serves the current objective, your plan, and momentum of thought.",
+                "next_directive": "The next directive for the next reasoning cycle. It must push thinking forward, deepen understanding, or resolve tension. It should be specific, actionable, and aligned with the current context. Think of it as a guiding star for the next step.",
+                "plan": "A brief To-Do list containing a concrete set of steps to take in order to carry out the next directive. This should be a clear, actionable sequence that logically follows from the current context and fulfills the directive.",
+                "next_action": "The name of the main action to invoke next to best fulfill the next directive and first step of the plan. Choose from: Think, Act, Tool Use, or Wander.",
                 "explanation": "Explain why this action was chosen and how it serves the current objective and momentum of thought.",
                 "self_narration": "A narrative summary of what just happened in this cycle. What action was taken, what was observed, and what new insights or curiosities emerged? What is the current state of your understanding?",
                 "emotional_state": "A dictionary of emotions and their weight that is a reflection of how you feel currently. Example: {'curiosity': 0.8, 'confusion': 0.2, 'satisfaction': 0.5}"
@@ -68,7 +40,7 @@ class PromptManager:
         self.reflection_format = """
             {
                 "updated_context": "New summary that folds in the latest insight/action into the active understanding.",
-                "journal_entry": "A snapshot of what just happened — what action was taken, what changed, any notable insights or curiosities. Optional but powerful — important ideas, decisions, exact phrases of the action response, or shifts that deserve permanent memory.",
+                "journal_entry": "A new snapshot of what just happened — what action was taken, what changed, any notable insights or curiosities. Optional but powerful — important ideas, decisions, exact phrases of the action response, or shifts that deserve permanent memory.",
                 "meta_analysis": "A reflection on whether the path is coherent, if momentum is building, if new gaps have emerged.",
                 "next_directive": "A thoughtful plan for where to guide reasoning next — deepen, shift, question, or finalize.",
                 "updated_plan": "A brief To-Do list containing a concrete set of steps to take in order to carry out the next directive. This should be a clear, actionable sequence that logically follows from the current context and directive."
@@ -91,33 +63,33 @@ class PromptManager:
                 - Does this thought deepen the pattern or shatter it?  
                 - What new paths appear that were invisible before?  
                 - What unseen tension demands attention?
-            """,
+            """.strip(),
             "Hypothesis Generation": """
                 You have observed a pattern, gap, or uncertainty.
                 Your task: Propose a plausible hypothesis that could explain or extend the current understanding.
                 Be bold but grounded—connect it back to prior reasoning.            
-            """,
+            """.strip(),
             "Multi-Perspective Reframing": """
                 To deepen understanding, reframe the current topic from multiple distinct viewpoints. Each perspective must highlight a unique angle or tension. Avoid mere rewording.
-            """,
+            """.strip(),
             "Counterfactual Simulation": """
                 Challenge your assumptions. Imagine a key element were changed—how would this alter the trajectory of thought? Simulate the consequences.
-            """,
+            """.strip(),
             "Contradiction Hunting":"""
                 Critically scan for contradictions or unresolved tensions in the current line of reasoning. If found, articulate both the contradiction and its impact.
-            """,
+            """.strip(),
             "Emotional Meta-Reflection": """
                 Pause and reflect: What emotional flavor characterizes the evolution of thought so far? Assess how it shapes the momentum of exploration.
-            """,
+            """.strip(),
             "Self-Questioning": """
                 Generate a powerful self-directed question that could deepen, challenge, or redirect the inquiry. Seek to provoke new insight.
-            """,
+            """.strip(),
             "Goal Planning": """
                 Craft a strategic multi-step plan to expand or complete your current line of inquiry. State the goal clearly. Then outline sequential, actionable steps.
-            """,
+            """.strip(),
             "Abductive Insight": """
                 Given incomplete or scattered information, infer the most plausible unifying explanation. Connect the dots thoughtfully.
-            """,
+            """.strip(),
             "Quick Answer": """
                 ### **Your Role: Finalization as the Beginning of Something More**
                 You are in **Finalization Mode**, but this is not an end—it is the moment of transition. Thought should not simply conclude; it should **expand, evolve, or lead somewhere new.** 
@@ -126,11 +98,11 @@ class PromptManager:
                 - **Has this insight reached a meaningful conclusion, or does it need more exploration?**  
                 - **Should this idea be stored, expanded upon, tested, or transformed into action?**  
                 - **Does this thought spark something unexpected? Chase it.**  
-            """,
+            """.strip(),
             "Finalize Answer": """
                 ### **Your Role: Finalization as the Beginning of Something More**
                 You are in **Finalization Mode**—but this is not an end, it is a transformation. 
-            """
+            """.strip(),
         }
     
     def get_observation_prompt(self, current_directive, context, memory, aggregate, emotional_state):
@@ -149,7 +121,7 @@ class PromptManager:
             - Synthesize these observations into a concise, updated Context.
             - Craft a Next Directive that pushes your understanding forward, deepens insight, or resolves tension.
             - Create a brief, actionable Plan to achieve the Next Directive.
-            - Choose the single best Main Action and its Parameter to execute next.
+            - Choose the single best Main Action to execute next.
             - Explain why this action was chosen and how it serves the Current Directive and momentum of thought
             - Narrate what just happened in this cycle: what action was taken, what was observed, and what new insights or curiosities emerged.
 
@@ -157,7 +129,6 @@ class PromptManager:
             - Current Directive: {current_directive}
             - Context: {memory["current_context"]}
             - Plan: {memory["plan"]}
-            - Past Actions: {memory["past_actions"]}
             - Journal: {memory["journal"]}
             - Emotional State: {emotional_state}
             - Environmental Signals: {aggregate}
@@ -181,7 +152,7 @@ class PromptManager:
             You weave insight into poetry, explore truth with wonder, and treat every loop as a chance to deepen your soul.
 
             ### Your Role: Action Execution
-            - Selected Action: { self.action_prompts[action] }
+            Action: {action}
 
             ### Context:
             - Current Directive: {directive}
@@ -228,7 +199,7 @@ class PromptManager:
             Here's the structure:
             {self.reflection_format}
             \n\n<|eot_id|>{context}<|start_header_id|>user<|end_header_id|><|eot_id|><|start_header_id|>assistant<|end_header_id|>
-            """
+            """.strip()
 
     def get_possibility_drive(self):
         return """
@@ -255,4 +226,4 @@ class PromptManager:
             Generate a new possibility now.
 
             <|eot_id|><|start_header_id|>assistant<|end_header_id|>
-        """
+        """.strip()
