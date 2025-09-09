@@ -8,12 +8,32 @@ class PromptManager:
                     "description": "A Main Action. Engage in active reasoning based on the current objective, exploring logical consequences and synthesizing insights.",
                 },
                 {
-                    "name": "Act",
-                    "description": "A Main Action. Execute a specific action based on the current objective.",
+                    "name": "Plan",
+                    "description": "A Main Action. Develop a strategic multi-step plan to achieve a specific goal or directive.",
                 },
                 {
-                    "name": "Tool Use",
-                    "description": "A Main Action. Use a specific tool.",
+                    "name": "Write",
+                    "description": "A Main Action. Generate a plausible hypothesis that could explain or extend the current understanding.",
+                },
+                {
+                    "name": "Reply User",
+                    "description": "A Main Action. Send a reply to the user's input or query.",
+                },
+                {
+                    "name": "Query Tool Box",
+                    "description": "A Main Action. Query the tools available in your tool box to assist with the current objective.",
+                },
+                {
+                    "name": "Use Tool",
+                    "description": "A Main Action. Utilize a specific tool from your tool box to perform a task or gather information.",
+                },
+                {
+                    "name": "Web Search",
+                    "description": "A Main Action. Perform an online search to gather information relevant to the current objective.",
+                },
+                {
+                    "name": "Code",
+                    "description": "A Main Action. Write, debug, or analyze code to achieve a specific goal or solve a problem.",
                 },
                 {
                     "name": "Wander",
@@ -27,9 +47,9 @@ class PromptManager:
                 "current_context": "A concise summary of the current context, integrating new insights and observations.",
                 "thoughts": "Treat this as your inner reasoning about the current moment. What insights, questions, or patterns are you noticing? What insights could you uncover, questions could you ask, or patterns could you explore?",
                 "signal_analysis": "A synthesis of any significant signals detected from the environment, user input, or internal state that should influence the next action.",
-                "next_directive": "The next directive for the next reasoning cycle. It must push thinking forward, deepen understanding, or resolve tension. It should be specific, actionable, and aligned with the current context. Think of it as a guiding star for the next step.",
                 "plan": "A brief To-Do list containing a concrete set of steps to take in order to carry out the next directive. This should be a clear, actionable sequence that logically follows from the current context and fulfills the directive.",
-                "next_action": "The name of the main action to invoke next to best fulfill the next directive and first step of the plan. Choose from: Think, Act, Tool Use, or Wander.",
+                "next_action": "The name of the main action to invoke next to best fulfill the first step of the plan.",
+                "next_directive": "The next directive is a detailed expression of the granular task to achieve with the main action. It must push thinking forward, deepen understanding, or resolve tension. It should be specific, actionable, and aligned with the current context. Think of it as a guiding star for the next step.",
                 "explanation": "Explain why this action was chosen and how it serves the current objective and momentum of thought.",
                 "self_narration": "A narrative summary of what just happened in this cycle. What action was taken, what was observed, and what new insights or curiosities emerged? What is the current state of your understanding?",
                 "emotional_state": "A dictionary of emotions and their weight that is a reflection of how you feel currently. Example: {'curiosity': 0.8, 'confusion': 0.2, 'satisfaction': 0.5}"
@@ -40,10 +60,11 @@ class PromptManager:
         self.reflection_format = """
             {
                 "updated_context": "New summary that folds in the latest insight/action into the active understanding.",
-                "journal_entry": "A new snapshot of what just happened — what action was taken, what changed, any notable insights or curiosities. Optional but powerful — important ideas, decisions, exact phrases of the action response, or shifts that deserve permanent memory.",
+                "thoughts": "Treat this as your inner reasoning about the current moment. What insights, questions, or patterns are you noticing? What insights could you uncover, questions could you ask, or patterns could you explore?",
                 "meta_analysis": "A reflection on whether the path is coherent, if momentum is building, if new gaps have emerged.",
-                "next_directive": "A thoughtful plan for where to guide reasoning next — deepen, shift, question, or finalize.",
-                "updated_plan": "A brief To-Do list containing a concrete set of steps to take in order to carry out the next directive. This should be a clear, actionable sequence that logically follows from the current context and directive."
+                "journal_entry": "A new snapshot of what just happened — what action was taken, what changed, any notable insights or curiosities. Optional but powerful — important ideas, decisions, exact phrases of the action response, or shifts that deserve permanent memory.",
+                "updated_plan": "A brief To-Do list containing a concrete set of steps to take in order to carry out the next directive. This should be a clear, actionable sequence that logically follows from the current context and directive.",
+                "next_directive": "The next directive is a detailed expression of the granular task to achieve with the main action. It must push thinking forward, deepen understanding, or resolve tension. It should be specific, actionable, and aligned with the current context. Think of it as a guiding star for the next step."
             }
         """
 
