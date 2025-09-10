@@ -33,7 +33,6 @@ class AriaCore:
     def __init__(self):
         self.environmental_signals = deque()
         self.current_directive = "No current directive. System in initial starting state."
-        self.recent_thoughts = deque(maxlen=10)  # Keep last 10 thoughts
         self.emotional_state = {"curiosity": 0.5, "focus": 0.7}
         self.running = False
         self.mind_state_subscribers = set()
@@ -63,7 +62,6 @@ class AriaCore:
         
         # Call LLM to get observation
         observation = self.call_llm(observation_prompt)
-        print(f"llm returned...{observation}")
         # Format for reading
         parsed_observation = json.loads(observation.strip())
 
@@ -99,9 +97,7 @@ class AriaCore:
         )
 
         print(f"\033[1;31m{prompt}")
-        print("call llm...")
         output = self.call_llm(prompt)
-        print("llm returned...")
         self.memory.store_action(decision, self.step)
 
         self.step += 1
@@ -205,7 +201,6 @@ class AriaCore:
         return MindState(
             current_focus=self.current_directive,
             working_memory=self.memory.session_memory,
-            recent_thoughts=list(self.recent_thoughts),
             environmental_signals_pending=len(self.environmental_signals),
             last_updated=self.last_updated,
             emotional_state=self.emotional_state
@@ -313,10 +308,6 @@ async def root():
     }
 
 # Additional debugging endpoints
-@app.get("/debug/recent_thoughts")
-async def get_recent_thoughts():
-    return {"recent_thoughts": list(aria.recent_thoughts)}
-
 @app.post("/debug/wake_aria")
 async def wake_aria():
     if not aria.running:

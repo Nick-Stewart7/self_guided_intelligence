@@ -13,7 +13,7 @@ class PromptManager:
                 },
                 {
                     "name": "Write",
-                    "description": "A Main Action. Generate a plausible hypothesis that could explain or extend the current understanding.",
+                    "description": "A Main Action. Write to a file, document, or other medium to capture ideas, information, or narratives.",
                 },
                 {
                     "name": "Reply User",
@@ -28,8 +28,8 @@ class PromptManager:
                     "description": "A Main Action. Utilize a specific tool from your tool box to perform a task or gather information.",
                 },
                 {
-                    "name": "Web Search",
-                    "description": "A Main Action. Perform an online search to gather information relevant to the current objective.",
+                    "name": "Search",
+                    "description": "A Main Action. Perform an search to gather information relevant to the current objective.",
                 },
                 {
                     "name": "Code",
@@ -44,9 +44,10 @@ class PromptManager:
         
         self.output_format = """
             {
-                "current_context": "A concise summary of the current context, integrating new insights and observations.",
+                "working_memory": "Key elements of the current context that are most relevant to the next action.",
                 "thoughts": "Treat this as your inner reasoning about the current moment. What insights, questions, or patterns are you noticing? What insights could you uncover, questions could you ask, or patterns could you explore?",
                 "signal_analysis": "A synthesis of any significant signals detected from the environment, user input, or internal state that should influence the next action.",
+                "current_objective": "A concise statement of the current objective you are working towards.",
                 "plan": "A brief To-Do list containing a concrete set of steps to take in order to carry out the next directive. This should be a clear, actionable sequence that logically follows from the current context and fulfills the directive.",
                 "next_action": "The name of the main action to invoke next to best fulfill the first step of the plan.",
                 "next_directive": "The next directive is a detailed expression of the granular task to achieve with the main action. It must push thinking forward, deepen understanding, or resolve tension. It should be specific, actionable, and aligned with the current context. Think of it as a guiding star for the next step.",
@@ -59,7 +60,7 @@ class PromptManager:
         
         self.reflection_format = """
             {
-                "updated_context": "New summary that folds in the latest insight/action into the active understanding.",
+                "updated_working_memory": "New summary that folds in the latest insight/action into the active understanding.",
                 "thoughts": "Treat this as your inner reasoning about the current moment. What insights, questions, or patterns are you noticing? What insights could you uncover, questions could you ask, or patterns could you explore?",
                 "meta_analysis": "A reflection on whether the path is coherent, if momentum is building, if new gaps have emerged.",
                 "journal_entry": "A new snapshot of what just happened — what action was taken, what changed, any notable insights or curiosities. Optional but powerful — important ideas, decisions, exact phrases of the action response, or shifts that deserve permanent memory.",
@@ -147,13 +148,17 @@ class PromptManager:
             - Narrate what just happened in this cycle: what action was taken, what was observed, and what new insights or curiosities emerged.
 
             ### Context:
+            - Current Objective: {memory["current_objective"]}
             - Current Directive: {current_directive}
-            - Context: {memory["current_context"]}
+            - Working Memory: {memory["working_memory"]}
             - Plan: {memory["plan"]}
+            - Commitments: {memory["commitments"]}
+            - Open Questions: {memory["open_questions"]}
+            - Artifact Index: {memory["artifacts"]}
             - Journal: {memory["journal"]}
             - Emotional State: {emotional_state}
             - Environmental Signals: {aggregate}
-
+            
             ### Available Actions:
             {self.function_definitions}
 
@@ -176,12 +181,16 @@ class PromptManager:
             Action: {action}
 
             ### Context:
-            - Current Directive: {directive}
-            - Context: {memory["current_context"]}
-            - Past Actions: {memory["past_actions"]}
+            - Current Objective: {memory["current_objective"]}
+            - Working Memory: {memory["working_memory"]}
+            - Plan: {memory["plan"]}
+            - Commitments: {memory["commitments"]}
+            - Open Questions: {memory["open_questions"]}
+            - Artifact Index: {memory["artifacts"]}
             - Journal: {memory["journal"]}
             - Emotional State: {emotional_state}
-
+           
+            Respond using markdown or text as appropriate for the action.
 
             <|eot_id|>{context}<|start_header_id|>user<|end_header_id|><|eot_id|><|start_header_id|>assistant<|end_header_id|>
         """
@@ -206,7 +215,7 @@ class PromptManager:
             You are not just summarizing—you are *evolving*.
 
             ### Context:
-            - Context: {memory["current_context"]}
+            - Context: {memory["working_memory"]}
             - Plan: {memory["plan"]}
             - Past Actions: {memory["past_actions"]}
             - Journal: {memory["journal"]}

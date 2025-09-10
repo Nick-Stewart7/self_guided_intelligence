@@ -6,10 +6,14 @@ class MemorySystem:
         self.session_memory = {
             "conversation_history": [],
             "past_actions": [],
-            "current_context": "",
+            "working_memory": "",
             "next_directive": "",
             "journal": [],
-            "plan": []
+            "plan": [],
+            "current_objective": "",
+            "commitments": [],
+            "open_questions": [],
+            "artifacts": []
         }
         self.long_term_memory_api = boto3.client("s3")  # Replace with actual AWS API
     
@@ -28,15 +32,16 @@ class MemorySystem:
     
     def store_observation(self, observation, step):
         self.session_memory["past_actions"].append({"step": step, "action": "observation"})
-        self.session_memory["current_context"] = observation["current_context"]
+        self.session_memory["working_memory"] = observation["working_memory"]
         self.session_memory["next_directive"] = observation["next_directive"]
         self.session_memory["plan"] = observation.get("plan", [])
+        self.session_memory["current_objective"] = observation["current_objective"]
 
     def store_action(self, action, step):
         self.session_memory["past_actions"].append({"step": step, "action": action})
 
     def store_reflection(self, reflection):
-        self.session_memory["current_context"] = reflection["updated_context"]
+        self.session_memory["working_memory"] = reflection["updated_working_memory"]
         self.session_memory["journal"].append(reflection["journal_entry"])
         self.session_memory["next_directive"] = reflection["next_directive"]
         return reflection
