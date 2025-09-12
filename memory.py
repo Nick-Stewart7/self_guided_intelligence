@@ -31,17 +31,34 @@ class MemorySystem:
         self.session_memory["conversation_history"].append({"role": "AI", "content": response}) 
     
     def store_observation(self, observation, step):
-        self.session_memory["past_actions"].append({"step": step, "action": "observation"})
-        self.session_memory["working_memory"] = observation["working_memory"]
-        self.session_memory["next_directive"] = observation["next_directive"]
-        self.session_memory["plan"] = observation.get("plan", [])
-        self.session_memory["current_objective"] = observation["current_objective"]
+        """Store observation data with error handling"""
+        try:
+            self.session_memory["past_actions"].append({"step": step, "action": "observation"})
+            
+            # Safely extract observation data with fallbacks
+            self.session_memory["working_memory"] = observation.get("working_memory", "Error extracting working memory")
+            self.session_memory["next_directive"] = observation.get("next_directive", "Continue with current objective")
+            self.session_memory["plan"] = observation.get("plan", [])
+            self.session_memory["current_objective"] = observation.get("current_objective", "No current objective defined")
+            
+        except Exception as e:
+            print(f"Error storing observation: {e}")
+            # Ensure we don't break the system
+            self.session_memory["past_actions"].append({"step": step, "action": "observation_error"})
+            self.session_memory["working_memory"] = f"Error storing observation: {str(e)}"
 
     def store_action(self, action, step):
         self.session_memory["past_actions"].append({"step": step, "action": action})
 
     def store_reflection(self, reflection):
-        self.session_memory["working_memory"] = reflection["updated_working_memory"]
-        self.session_memory["journal"].append(reflection["journal_entry"])
-        self.session_memory["next_directive"] = reflection["next_directive"]
-        return reflection
+        """Store reflection data with error handling"""
+        try:
+            self.session_memory["working_memory"] = reflection.get("updated_working_memory", "Error extracting updated working memory")
+            self.session_memory["journal"].append(reflection.get("journal_entry", "Error extracting journal entry"))
+            self.session_memory["next_directive"] = reflection.get("next_directive", "Continue with current objective")
+            return reflection
+        except Exception as e:
+            print(f"Error storing reflection: {e}")
+            # Ensure we don't break the system
+            self.session_memory["journal"].append(f"Error storing reflection: {str(e)}")
+            return reflection

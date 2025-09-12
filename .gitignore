@@ -2,3 +2,33 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Environment files (contain secrets)
+.env
+.env.local
+.env.production
+
+# Configuration files with sensitive data
+config.json
+config.local.json
+
+# AWS credentials
+.aws/
+credentials
+
+# Logs
+*.log
+logs/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Deprecated files (kept for reference but not actively maintained)
+*_deprecated.py
