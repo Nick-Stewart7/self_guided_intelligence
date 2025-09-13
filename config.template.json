@@ -1,0 +1,26 @@
+{
+  "aws": {
+    "region": "us-east-1",
+    "s3_bucket": "your-s3-bucket-name",
+    "knowledge_base_id": "your-knowledge-base-id",
+    "data_source_id": "your-data-source-id",
+    "reasoning_model": "your-reasoning-model-arn",
+    "memory_model": "your-memory-model-arn"
+  },
+  "aria": {
+    "natural_pause_seconds": 30,
+    "mind_loop_enabled": true,
+    "max_environmental_signals": 100,
+    "temperature": 0.5,
+    "top_p": 0.9,
+    "max_gen_len": 2048,
+    "host": "0.0.0.0",
+    "port": 8000,
+    "reload": true,
+    "log_level": "info",
+    "initial_emotional_state": {
+      "curiosity": 0.5,
+      "focus": 0.7
+    }
+  }
+}

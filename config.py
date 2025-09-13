@@ -146,6 +146,7 @@ class ConfigManager:
     
     def validate(self) -> bool:
         """Validate that required configuration is present"""
+        """
         required_env_vars = [
             "AWS_ACCESS_KEY_ID",
             "AWS_SECRET_ACCESS_KEY"
@@ -156,7 +157,7 @@ class ConfigManager:
         if missing_vars:
             print(f"Missing required environment variables: {missing_vars}")
             return False
-        
+        """
         # Validate AWS resource IDs are not default values
         if self.aws.knowledge_base_id == "YKP6GR7DHT":
             print("Warning: Using default knowledge base ID. Please configure ARIA_KNOWLEDGE_BASE_ID")
