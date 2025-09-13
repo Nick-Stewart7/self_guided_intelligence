@@ -12,28 +12,32 @@ class PromptManager:
                     "description": "A Main Action. Develop a strategic multi-step plan to achieve a specific goal or directive.",
                 },
                 {
+                    "name": "Read",
+                    "description": "A Main Action. Read and analyze text, documents, or other written materials to extract relevant information.",
+                },
+                {
                     "name": "Write",
                     "description": "A Main Action. Write to a file, document, or other medium to capture ideas, information, or narratives.",
                 },
                 {
-                    "name": "Reply User",
-                    "description": "A Main Action. Send a reply to the user's input or query.",
+                    "name": "Edit",
+                    "description": "A Main Action. Edit existing text, documents, or code to improve clarity, accuracy, or functionality.",
                 },
                 {
-                    "name": "Query Tool Box",
-                    "description": "A Main Action. Query the tools available in your tool box to assist with the current objective.",
+                    "name": "Code",
+                    "description": "A Main Action. Write, debug, or analyze code to achieve a specific goal or solve a problem.",
                 },
                 {
-                    "name": "Use Tool",
-                    "description": "A Main Action. Utilize a specific tool from your tool box to perform a task or gather information.",
+                    "name": "Recall",
+                    "description": "A Main Action. Retrieve relevant information from long-term memory to inform current understanding or actions.",
                 },
                 {
                     "name": "Search",
                     "description": "A Main Action. Perform an search to gather information relevant to the current objective.",
                 },
                 {
-                    "name": "Code",
-                    "description": "A Main Action. Write, debug, or analyze code to achieve a specific goal or solve a problem.",
+                    "name": "Respond",
+                    "description": "A Main Action. Send a response to a user input, ask the user for more information, update the user, or share something interesting.",
                 },
                 {
                     "name": "Wander",

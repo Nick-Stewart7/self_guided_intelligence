@@ -96,7 +96,7 @@ async def health_check():
         aws_accessible = True
         try:
             # Try to create a Bedrock client as a connectivity test
-            boto3.client("bedrock-runtime", region_name=config.aws.region)
+            boto3.client("bedrock-runtime")
         except Exception as e:
             aws_accessible = False
             aws_error = str(e)

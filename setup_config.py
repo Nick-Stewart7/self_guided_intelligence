@@ -111,8 +111,8 @@ def main():
     create_config_template()
     
     # Step 3: Check AWS credentials
-    print("\n3. Checking AWS credentials...")
-    aws_creds_ok = check_aws_credentials()
+    #print("\n3. Checking AWS credentials...")
+    #aws_creds_ok = check_aws_credentials()
     
     # Step 4: Check AWS resources
     print("\n4. Checking AWS resource configuration...")
@@ -126,7 +126,7 @@ def main():
     print("\n" + "=" * 50)
     print("SETUP SUMMARY")
     print("=" * 50)
-    
+    """
     if aws_creds_ok and config_ok:
         print("✓ Setup complete! You can now run: python run_server.py")
     else:
@@ -145,6 +145,6 @@ def main():
             print("   ARIA_DATA_SOURCE_ID=your-data-source-id")
     
     print("\nFor more information, see README.md")
-
+    """
 if __name__ == "__main__":
     main()

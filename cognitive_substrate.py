@@ -13,8 +13,6 @@ from prompts import PromptManager
 from utils import ToolSystem
 from config import config
 
-
-load_dotenv()
 # Pydantic models for API contracts
 class EnvironmentalSignal(BaseModel):
     type: str  # "user_message", "system_event", "external_data", etc.
@@ -253,12 +251,12 @@ class AriaCore:
         
         for attempt in range(retries):
             try:
-                bedrock_client = boto3.client("bedrock-runtime", region_name=config.aws.region)
+                bedrock_client = boto3.client("bedrock-runtime")
                 if size_flag:
                     model_id = config.aws.memory_model
                 else:
                     model_id = config.aws.reasoning_model
-                
+                print("invoking model:", model_id)
                 llm_params = config.get_llm_params()
                 llm_response = bedrock_client.invoke_model(
                     modelId=model_id,
