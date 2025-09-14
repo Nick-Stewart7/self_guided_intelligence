@@ -5,10 +5,6 @@ from cognitive_substrate import EnvironmentalSignal, MindState, AriaCore
 from datetime import datetime
 import asyncio
 import boto3
-from config import config
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Global Aria instance
 aria = AriaCore()
@@ -91,8 +87,6 @@ async def aria_sleep():
 async def health_check():
     """Health check endpoint for monitoring"""
     try:
-        # Check configuration
-        config_valid = config.validate()
         
         # Check AWS connectivity (simple test)
         aws_accessible = True
@@ -104,10 +98,8 @@ async def health_check():
             aws_error = str(e)
         
         health_status = {
-            "status": "healthy" if config_valid and aws_accessible else "unhealthy",
             "timestamp": datetime.now().isoformat(),
             "checks": {
-                "configuration": "ok" if config_valid else "failed",
                 "aws_connectivity": "ok" if aws_accessible else "failed",
                 "mind_loop_running": aria.running,
                 "environmental_signals_pending": len(aria.environmental_signals)
