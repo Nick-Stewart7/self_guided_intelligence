@@ -6,6 +6,9 @@ from datetime import datetime
 import asyncio
 import boto3
 from config import config
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Global Aria instance
 aria = AriaCore()
@@ -67,7 +70,6 @@ async def root():
         "message": "Aria Mind API",
         "status": "Aria is thinking..." if aria.running else "Aria is sleeping",
         "pending_signals": len(aria.environmental_signals),
-        "current_directive": aria.current_directive,
     }
 
 # Additional debugging endpoints
@@ -133,8 +135,6 @@ async def get_metrics():
             "mind_cycles_completed": aria.step,
             "environmental_signals_pending": len(aria.environmental_signals),
             "mind_loop_running": aria.running,
-            "current_directive": aria.current_directive,
-            "emotional_state": aria.emotional_state,
             "last_updated": aria.last_updated.isoformat(),
             "uptime_seconds": (datetime.now() - aria.last_updated).total_seconds()
         }

@@ -1,5 +1,5 @@
+from typing import Dict, Optional, Any
 from pydantic import BaseModel
-from typing import Dict, List, Optional, Any
 import asyncio
 import json
 import time
@@ -7,7 +7,6 @@ import boto3
 from datetime import datetime
 from collections import deque
 import uuid
-from dotenv import load_dotenv
 from memory import MemorySystem
 from prompts import PromptManager
 from utils import ToolSystem
@@ -23,7 +22,6 @@ class EnvironmentalSignal(BaseModel):
 class MindState(BaseModel):
     current_focus: Optional[str]
     working_memory: Dict[str, Any]
-    recent_thoughts: List[str]
     environmental_signals_pending: int
     last_updated: datetime
     emotional_state: Dict[str, float] = {}
@@ -31,29 +29,25 @@ class MindState(BaseModel):
 class AriaCore:
     def __init__(self):
         self.environmental_signals = deque(maxlen=config.aria.max_environmental_signals)
-        self.current_directive = "No current directive. System in initial starting state."
-        self.emotional_state = config.aria.initial_emotional_state.copy()
         self.running = False
         self.mind_state_subscribers = set()
-        self.last_updated = datetime.now()
         self.memory = MemorySystem()
         self.prompt_manager = PromptManager()
         self.tools = ToolSystem()
         self.step = 0
         self.context = self.memory.get_context()
+        self.last_updated = datetime.now()
         self.time = time.time()
 
-    def observe(self, current_directive, aggregate, emotional_state):
+    def observe(self, aggregate):
         """
         Observe phase - Aria notices her internal state and environment then she decides her next action.
         """
         try:
             observation_prompt = self.prompt_manager.get_observation_prompt(
-                current_directive,
                 self.context,
                 self.memory.session_memory,
-                aggregate,
-                emotional_state
+                aggregate
             )
 
             # Debug log
@@ -66,6 +60,7 @@ class AriaCore:
             if observation.startswith("Error:"):
                 print(f"LLM error in observation: {observation}")
                 # Return a fallback observation
+                #Todo create a useful fallback observation
                 return {
                     "working_memory": "Error in observation processing",
                     "thoughts": "Experiencing technical difficulties",
@@ -76,7 +71,7 @@ class AriaCore:
                     "next_directive": "Focus on basic functionality while recovering",
                     "explanation": "System is in error recovery mode",
                     "self_narration": "Encountered technical difficulties, attempting recovery",
-                    "emotional_state": {"uncertainty": 0.8, "determination": 0.6}
+                    "emotional_state": {"uncertainty": 1.0, "determination": 1.0}
                 }
             
             # Format for reading
@@ -86,6 +81,7 @@ class AriaCore:
                 print(f"JSON parsing error in observation: {e}")
                 print(f"Raw observation: {observation}")
                 # Return fallback observation
+                #Todo create a useful fallback observation
                 return {
                     "working_memory": "JSON parsing error in observation",
                     "thoughts": "Unable to parse observation response",
@@ -101,13 +97,6 @@ class AriaCore:
 
             # Store in memory so Aria "remembers" her past evaluations
             self.memory.store_observation(parsed_observation, self.step)
-
-            # Update Emotional State safely
-            if "emotional_state" in parsed_observation:
-                self.emotional_state = parsed_observation["emotional_state"]
-
-            # Increase step count
-            self.step += 1
 
             return parsed_observation
             
@@ -132,24 +121,18 @@ class AriaCore:
         Action phase - Aria executes based on her observation.
         """
 
-        ### 🧠 AI DECIDES WHAT TO DO NEXT:
-        decision = observation["next_action"]
-
-        directive = self.memory.session_memory["next_directive"]
-
-        plan = self.memory.session_memory["plan"]
+        #todo create unique action execution system
+        action = observation["next_action"]
 
         prompt = self.prompt_manager.get_prompt(
-            plan[0] if plan else "No specific plan.",
-            directive,
             self.context,
             self.memory.session_memory,
-            self.emotional_state
+            action
         )
 
         print(f"\033[1;31m{prompt}")
         output = self.call_llm(prompt)
-        self.memory.store_action(decision, self.step)
+        self.memory.store_action(action, self.step)
 
         self.step += 1
         return output
@@ -161,10 +144,9 @@ class AriaCore:
         """
         try:
             reflection_prompt = self.prompt_manager.get_reflection_prompt(
-                response,
                 self.context,
                 self.memory.session_memory,
-                self.emotional_state
+                response
             )
             print(f"\033[1;31m{reflection_prompt}")
 
@@ -247,7 +229,6 @@ class AriaCore:
 
     def call_llm(self, prompt, size_flag=False, retries=3):
         """Handles API call to LLaMA3 with error handling and retries."""
-        import time
         
         for attempt in range(retries):
             try:
@@ -337,12 +318,14 @@ class AriaCore:
     
     def get_mind_state(self) -> MindState:
         """Current snapshot of Aria's mind"""
+        print(f"Getting mind state at {datetime.now()}")
+        print(f"Current directive: {self.memory.session_memory['next_directive']} | Pending signals: {len(self.environmental_signals)} | Last updated: {self.last_updated} | Emotional state: {self.memory.session_memory.get("emotional_state", {})} | Working memory size: {len(self.memory.session_memory.get('conversation_history', []))} entries")
         return MindState(
-            current_focus=self.current_directive,
+            current_focus=self.memory.session_memory.get("next_directive", "No current directive"),
             working_memory=self.memory.session_memory,
             environmental_signals_pending=len(self.environmental_signals),
             last_updated=self.last_updated,
-            emotional_state=self.emotional_state
+            emotional_state=self.memory.session_memory.get("emotional_state", {})
         )
 
     async def natural_pause(self):
@@ -358,6 +341,7 @@ class AriaCore:
         
         while self.running:
             try:
+                await self.natural_pause()
                 cycle_count += 1
                 print(f"\033[1;35m--- Mind Cycle {cycle_count} ---\n")
                 # Aggregate Signals with error handling
@@ -368,7 +352,7 @@ class AriaCore:
                     aggregate = "Error: Unable to aggregate environmental signals"
                 
                 # Observe
-                observation = self.observe(self.current_directive, aggregate, self.emotional_state)
+                observation = self.observe(aggregate)
                 print(f"\033[1;36mObservation:\n{observation}\n")
                 await self.natural_pause()
                 
@@ -381,15 +365,6 @@ class AriaCore:
                 reflection = self.reflect(response)
                 print(f"\033[1;32mReflection:\n{reflection}\n")
                 await self.natural_pause()
-
-                # Update Directive safely
-                try:
-                    if "next_directive" in self.memory.session_memory:
-                        self.current_directive = self.memory.session_memory["next_directive"]
-                    else:
-                        print("Warning: No next_directive found in memory")
-                except Exception as e:
-                    print(f"Error updating directive: {e}")
                 
                 # Reset error counter on successful cycle
                 consecutive_errors = 0
@@ -407,16 +382,10 @@ class AriaCore:
                 # Progressive recovery delays
                 recovery_delay = min(30, 5 * consecutive_errors)
                 print(f"Entering recovery mode for {recovery_delay} seconds...")
-                await asyncio.sleep(recovery_delay)
-                
-                # Try to reset to a safe state
-                try:
-                    self.current_directive = "Recover from system errors and resume normal operation"
-                    self.emotional_state = {"concern": 0.6, "determination": 0.8}
-                except Exception as reset_error:
-                    print(f"Error during reset: {reset_error}")
-        
-        print("Mind loop stopped.")
+                await asyncio.sleep(recovery_delay) 
+            print("Mind loop stopped.")
     
     def stop_mind(self):
+        """Gracefully stop Aria's mind loop"""
         self.running = False
+        print("Stopping Aria's mind")
