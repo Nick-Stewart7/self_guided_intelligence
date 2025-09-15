@@ -123,12 +123,60 @@ class AriaCore:
 
         #todo create unique action execution system
         action = observation["next_action"]
-
-        prompt = self.prompt_manager.get_action_prompt(
-            self.context,
-            self.memory.session_memory,
-            action
-        )
+        match action:
+            case "Think":
+                prompt = self.prompt_manager.get_action_prompt(
+                    self.context,
+                    self.memory.session_memory,
+                    action
+                )
+            case "Plan":
+                prompt = self.prompt_manager.get_action_prompt(
+                    self.context,
+                    self.memory.session_memory,
+                    action
+                )
+            case "Read":
+                file_path = observation.get("file_path", "unknown.txt")
+                return self.tools.read_file(file_path)
+            case "Write":
+                file_path = observation.get("file_path", "unknown.txt")
+                content = observation.get("content", "")
+                return self.tools.write_file(file_path, content)
+            case "Edit":
+                #Todo write edit logic - read file the re-write with changes using LLM
+                file_path = observation.get("file_path", "unknown.txt")
+                content = self.tools.read_file(file_path)
+                return self.tools.write_file(file_path, content)
+            case "Code":
+                #Todo write code logic - create custom prompt for coding tasks
+                prompt = self.prompt_manager.get_action_prompt(
+                    self.context,
+                    self.memory.session_memory,
+                    action
+                )
+            case "Recall":
+                query = observation.get("query", "")
+                return self.tools.read_memory(query)
+            case "Memorize":
+                memory_type = observation.get("memory_type", "general")
+                memory_content = observation.get("memory_content", "")
+                return self.tools.write_memory(memory_content)
+            case "Search":
+                query = observation.get("query", "")
+                return self.tools.web_search(query)
+            case "Respond":
+                prompt = self.prompt_manager.get_action_prompt(
+                    self.context,
+                    self.memory.session_memory,
+                    action
+                )
+            case "Wander":
+                prompt = self.prompt_manager.get_action_prompt(
+                    self.context,
+                    self.memory.session_memory,
+                    action
+                )
 
         print(f"\033[1;31m{prompt}")
         output = self.call_llm(prompt)
@@ -200,32 +248,6 @@ class AriaCore:
             }
             self.memory.store_reflection(emergency_reflection)
             return json.dumps(emergency_reflection)
-
-    def run_read_memory(self, query):
-        query_response = self.tools.read_memory(query)
-
-        self.memory.session_memory["past_actions"].append(
-            {
-                "step": self.step,
-                "action": "Retrieve Memory"
-            }
-        )
-        self.step += 1
-
-        return query_response
-
-    def run_write_memory(self, memory_type, memory_content):
-        success = self.tools.write_memory(memory_type, memory_content)
-
-        self.memory.session_memory["past_actions"].append(
-            {
-                "step": self.step,
-                "action": "Write Memory"
-            }
-        )
-        self.step += 1
-
-        return success
 
     def call_llm(self, prompt, size_flag=False, retries=3):
         """Handles API call to LLaMA3 with error handling and retries."""

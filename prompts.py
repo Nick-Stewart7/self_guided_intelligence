@@ -40,6 +40,11 @@ class PromptManager:
                     "directive": "The directive is the granular task to achieve with this action. It should be specific, actionable, and aligned with the current context. Think of it as a guiding star for the next step."
                 },
                 {
+                    "name": "Memorize",
+                    "description": "A Main Action. Retrieve relevant information from your personal long-term memory to inform current understanding or actions.",
+                    "directive": "The directive is the granular task to achieve with this action. It should be specific, actionable, and aligned with the current context. Think of it as a guiding star for the next step."
+                },
+                {
                     "name": "Search",
                     "description": "A Main Action. Perform an search to gather information relevant to the current objective.",
                     "directive": "The directive is the granular task to achieve with this action. It should be specific, actionable, and aligned with the current context. Think of it as a guiding star for the next step."
