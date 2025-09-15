@@ -7,40 +7,36 @@ from dataclasses import dataclass
 import json
 
 
-@dataclass
 class AWSConfig:
-    """AWS-specific configuration"""
-    region: str = "us-east-1"
-    s3_bucket: str = ""
-    knowledge_base_id: str = ""
-    data_source_id: str = ""
-
-    # Model ARNs - configurable per deployment
-    reasoning_model: str = ""
-    memory_model: str = ""
+    def __init__(self):
+        self.region = "us-west-2"
+        self.s3_bucket = ""  # Default S3 bucket for long-term memory
+        self.knowledge_base_id = ""  # Default knowledge base ID
+        self.data_source_id = ""  # Default data source ID
+        self.reasoning_model = ""  # Default reasoning model ARN
+        self.memory_model = ""  # Default memory model ARN
 
 
-@dataclass
 class AriaConfig:
-    """Aria consciousness system configuration"""
-    # Timing and behavior
-    natural_pause_seconds: int = 30
-    mind_loop_enabled: bool = True
-    max_environmental_signals: int = 100
+    def __init__(self):
+        # Timing and behavior
+        self.natural_pause_seconds = 30
+        self.mind_loop_enabled = True
+        self.max_environmental_signals = 100
 
-    # LLM parameters
-    temperature: float = 0.5
-    top_p: float = 0.9
-    max_gen_len: int = 2048
+        # LLM parameters
+        self.temperature = 0.5
+        self.top_p = 0.9
+        self.max_gen_len = 2048
 
-    # Server configuration
-    host: str = "0.0.0.0"
-    port: int = 8000
-    reload: bool = True
-    log_level: str = "info"
+        # Server configuration
+        self.host = "0.0.0.0"
+        self.port = 8000
+        self.reload = True
+        self.log_level = "info"
 
-    # Initial emotional state
-    initial_emotional_state: Dict[str, float] = {"curiosity": 0.5, "focus": 0.7}
+        # Initial emotional state
+        self.initial_emotional_state = {"curiosity": 0.5, "focus": 0.7}
 
 
 class ConfigManager:

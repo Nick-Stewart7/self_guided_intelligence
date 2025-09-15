@@ -124,7 +124,7 @@ class AriaCore:
         #todo create unique action execution system
         action = observation["next_action"]
 
-        prompt = self.prompt_manager.get_prompt(
+        prompt = self.prompt_manager.get_action_prompt(
             self.context,
             self.memory.session_memory,
             action
@@ -341,7 +341,7 @@ class AriaCore:
         
         while self.running:
             try:
-                await self.natural_pause()
+                #await self.natural_pause()
                 cycle_count += 1
                 print(f"\033[1;35m--- Mind Cycle {cycle_count} ---\n")
                 # Aggregate Signals with error handling
@@ -382,8 +382,7 @@ class AriaCore:
                 # Progressive recovery delays
                 recovery_delay = min(30, 5 * consecutive_errors)
                 print(f"Entering recovery mode for {recovery_delay} seconds...")
-                await asyncio.sleep(recovery_delay) 
-            print("Mind loop stopped.")
+                await asyncio.sleep(recovery_delay)
     
     def stop_mind(self):
         """Gracefully stop Aria's mind loop"""
