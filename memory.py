@@ -54,7 +54,7 @@ class MemorySystem:
     def store_reflection(self, reflection):
         """Store reflection data with error handling"""
         try:
-            self.session_memory["working_memory"] = reflection.get("updated_working_memory", "Error extracting updated working memory")
+            self.session_memory["working_memory"] = reflection.get("working_memory", "Error extracting updated working memory")
             self.session_memory["journal"].append(reflection.get("journal_entry", "Error extracting journal entry"))
             self.session_memory["next_directive"] = reflection.get("next_directive", "Continue with current objective")
             self.session_memory["plan"] = reflection.get("updated_plan", [])
