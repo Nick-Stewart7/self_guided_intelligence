@@ -38,13 +38,17 @@ class AriaConfig:
         # Initial emotional state
         self.initial_emotional_state = {"curiosity": 0.5, "focus": 0.7}
 
+class TavilyConfig:
+    def __init__(self):
+        self.api_key = ""  # Default Tavily API key
 
 class ConfigManager:
     """Centralized configuration management"""
     def __init__(self, config_file: Optional[str] = "config.template.json"):
         self.config_file = config_file
         self.aws = AWSConfig()
-        self.aria = AriaConfig()   
+        self.aria = AriaConfig()  
+        self.tavily =  TavilyConfig()
         # Load from config file if provided
         self._load_from_file(config_file)
 
@@ -66,7 +70,13 @@ class ConfigManager:
                 aria_config = config_data['aria']
                 for key, value in aria_config.items():
                     if hasattr(self.aria, key):
-                        setattr(self.aria, key, value)                   
+                        setattr(self.aria, key, value)       
+            # Update Tavily config
+            if 'tavily' in config_data:
+                tavily_config = config_data['tavily']
+                for key, value in tavily_config.items():
+                    if hasattr(self.tavily, key):
+                        setattr(self.tavily, key, value)            
         except (TypeError, ValueError, AttributeError) as e:
             print(f"Warning: Failed to load config file {config_file}: {e}")
     def _validate(self) -> bool:

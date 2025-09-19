@@ -270,20 +270,16 @@
                       mindState.current_focus || "None"
                     }<br>
                     <strong>Pending Signals:</strong> ${
-                      mindState.environmental_signals_pending
+                      mindState.environmental_signals_pending || 0
                     }<br>
-                    <strong>Last Updated:</strong> ${new Date(
-                      mindState.last_updated
-                    ).toLocaleString()}<br>
                     <strong>Emotional State:</strong> ${JSON.stringify(
                       mindState.emotional_state,
                       null,
                       2
                     )}<br>
-                    <strong>Recent Thoughts:</strong><br>
-                    ${mindState.recent_thoughts
-                      .map((thought) => `• ${thought}`)
-                      .join("<br>")}
+                    <strong>Recent Thoughts:</strong> ${
+                      mindState.working_memory || "No recent thoughts"
+                    }
                 `;
         } catch (error) {
           mindStateDiv.innerHTML = `<div class="error">Error loading mind state: ${error.message}</div>`;
@@ -291,7 +287,7 @@
       }
 
       // Auto-refresh mind state every 5 seconds
-      setInterval(refreshMindState, 5000);
+      setInterval(refreshMindState, 20000);
 
       // Initial load
       refreshMindState();

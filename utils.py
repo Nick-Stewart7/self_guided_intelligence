@@ -1,8 +1,7 @@
 import uuid
 from config import config
 import chromadb
-from search_engines import bing_search
-import requests
+from tavily import TavilyClient
 
 
 class ToolSystem:
@@ -57,8 +56,11 @@ class ToolSystem:
             return f"Error: Unable to write file {file_path}. {str(e)}"
     
     def web_search(self, query):
-        url = bing_search.get_search_url(query)
-        resp = requests.get(url, timeout=10)
-        html = resp.text
-        print(f"Web search results for '{query}': {html[:200]}...")  # Print first 200 chars
-        return html
+        print(self.config.tavily.api_key)
+        tavily_client = TavilyClient(api_key=self.config.tavily.api_key)
+        try:
+            results = tavily_client.search(query)
+            return results
+        except Exception as e:
+            print(f"Error performing web search: {e}")
+            return [f"Error: Unable to perform web search. {str(e)}"]

@@ -32,32 +32,28 @@ class MemorySystem:
         self.session_memory["conversation_history"].append({"role": "user", "content": user_input})
         self.session_memory["conversation_history"].append({"role": "AI", "content": response}) 
     
-    def store_observation(self, observation, step):
+    def store_observation(self, observation):
         """Store observation data with error handling"""
         try:
-            self.session_memory["past_actions"].append({"step": step, "action": "observation"})
             self.session_memory["working_memory"] = observation.get("working_memory", "Error extracting working memory")
-            self.session_memory["next_directive"] = observation.get("next_directive", "Continue with current objective")
+            self.session_memory["next_directive"] = observation.get("directive", "Continue with current objective")
             self.session_memory["plan"] = observation.get("plan", [])
             self.session_memory["current_objective"] = observation.get("current_objective", "No current objective defined")
             self.session_memory["emotional_state"] = observation.get("emotional_state", {})
+            self.session_memory["open_questions"] = observation.get("open_questions", [])
             
         except (KeyError, TypeError, AttributeError) as e:
             print(f"Error storing observation: {e}")
-            # Ensure we don't break the system
-            self.session_memory["past_actions"].append({"step": step, "action": "observation_error"})
-            self.session_memory["working_memory"] = f"Error storing observation: {str(e)}"
 
-    def store_action(self, action, step):
+    def store_action(self, action, step, result):
         self.session_memory["past_actions"].append({"step": step, "action": action})
 
     def store_reflection(self, reflection):
         """Store reflection data with error handling"""
         try:
             self.session_memory["working_memory"] = reflection.get("working_memory", "Error extracting updated working memory")
+            self.session_memory["current_objective"] = reflection.get("next_objective", self.session_memory.get("current_objective", "No current objective defined"))
             self.session_memory["journal"].append(reflection.get("journal_entry", "Error extracting journal entry"))
-            self.session_memory["next_directive"] = reflection.get("next_directive", "Continue with current objective")
-            self.session_memory["plan"] = reflection.get("updated_plan", [])
             self.session_memory["emotional_state"] = reflection.get("emotional_state", {})
         except (KeyError, TypeError, AttributeError) as e:
             print(f"Error storing reflection: {e}")

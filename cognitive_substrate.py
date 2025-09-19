@@ -21,10 +21,9 @@ class EnvironmentalSignal(BaseModel):
 
 class MindState(BaseModel):
     current_focus: Optional[str]
-    working_memory: Dict[str, Any]
+    working_memory: str
     environmental_signals_pending: int
-    last_updated: datetime
-    emotional_state: Dict[str, float] = {}
+    emotional_state: Dict[str, float]
 
 class AriaCore:
     def __init__(self):
@@ -36,7 +35,6 @@ class AriaCore:
         self.tools = ToolSystem()
         self.step = 0
         self.context = self.memory.get_context()
-        self.last_updated = datetime.now()
         self.time = time.time()
 
     def observe(self, aggregate):
@@ -96,7 +94,7 @@ class AriaCore:
                 }
 
             # Store in memory so Aria "remembers" her past evaluations
-            self.memory.store_observation(parsed_observation, self.step)
+            self.memory.store_observation(parsed_observation)
 
             return parsed_observation
             
@@ -120,7 +118,8 @@ class AriaCore:
         """
         Action phase - Aria executes based on her observation.
         """
-
+        plan = self.memory.session_memory["plan"]
+        first_step = plan[0]
         #todo create unique action execution system
         action = observation["next_action"]
         match action:
@@ -180,7 +179,10 @@ class AriaCore:
 
         print(f"\033[1;31m{prompt}")
         output = self.call_llm(prompt)
-        self.memory.store_action(action, self.step)
+        self.memory.store_action(action, self.step, output)
+        if first_step["action"] == action and first_step.get("status") != "completed":
+            first_step["status"] = "completed"
+            plan.pop(0)  # Remove completed step
 
         self.step += 1
         return output
@@ -341,12 +343,11 @@ class AriaCore:
     def get_mind_state(self) -> MindState:
         """Current snapshot of Aria's mind"""
         print(f"Getting mind state at {datetime.now()}")
-        print(f"Current directive: {self.memory.session_memory['next_directive']} | Pending signals: {len(self.environmental_signals)} | Last updated: {self.last_updated} | Emotional state: {self.memory.session_memory.get("emotional_state", {})} | Working memory size: {len(self.memory.session_memory.get('conversation_history', []))} entries")
+        print(f"Current directive: {self.memory.session_memory['next_directive']} | Pending signals: {len(self.environmental_signals)} | Emotional state: {self.memory.session_memory.get("emotional_state", {})} | Working memory: {self.memory.session_memory.get("working_memory", "No working memory")}")
         return MindState(
             current_focus=self.memory.session_memory.get("next_directive", "No current directive"),
-            working_memory=self.memory.session_memory,
+            working_memory=self.memory.session_memory.get("working_memory", "No working memory"),
             environmental_signals_pending=len(self.environmental_signals),
-            last_updated=self.last_updated,
             emotional_state=self.memory.session_memory.get("emotional_state", {})
         )
 
