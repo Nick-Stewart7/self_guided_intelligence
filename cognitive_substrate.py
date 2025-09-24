@@ -35,7 +35,7 @@ class AriaCore:
         self.tools = ToolSystem()
         self.step = 0
         self.context = self.memory.get_context()
-        self.time = time.time()
+        self.current_plan = []
 
     def observe(self, aggregate):
         """
@@ -95,6 +95,7 @@ class AriaCore:
 
             # Store in memory so Aria "remembers" her past evaluations
             self.memory.store_observation(parsed_observation)
+            self.current_plan = parsed_observation.get("plan", [])
 
             return parsed_observation
             
@@ -118,85 +119,94 @@ class AriaCore:
         """
         Action phase - Aria executes based on her observation.
         """
-        plan = self.memory.session_memory["plan"]
-        first_step = plan[0]
-        #todo create unique action execution system
-        action = observation["next_action"]
-        match action:
-            case "Think":
-                prompt = self.prompt_manager.get_action_prompt(
-                    self.context,
-                    self.memory.session_memory,
-                    action
-                )
-            case "Plan":
-                prompt = self.prompt_manager.get_action_prompt(
-                    self.context,
-                    self.memory.session_memory,
-                    action
-                )
-            case "Read":
-                file_path = observation.get("file_path", "unknown.txt")
-                return self.tools.read_file(file_path)
-            case "Write":
-                file_path = observation.get("file_path", "unknown.txt")
-                content = observation.get("content", "")
-                return self.tools.write_file(file_path, content)
-            case "Edit":
-                #Todo write edit logic - read file the re-write with changes using LLM
-                file_path = observation.get("file_path", "unknown.txt")
-                content = self.tools.read_file(file_path)
-                return self.tools.write_file(file_path, content)
-            case "Code":
-                #Todo write code logic - create custom prompt for coding tasks
-                prompt = self.prompt_manager.get_action_prompt(
-                    self.context,
-                    self.memory.session_memory,
-                    action
-                )
-            case "Recall":
-                query = observation.get("query", "")
-                return self.tools.read_memory(query)
-            case "Memorize":
-                memory_type = observation.get("memory_type", "general")
-                memory_content = observation.get("memory_content", "")
-                return self.tools.write_memory(memory_content)
-            case "Search":
-                query = observation.get("query", "")
-                return self.tools.web_search(query)
-            case "Respond":
-                prompt = self.prompt_manager.get_action_prompt(
-                    self.context,
-                    self.memory.session_memory,
-                    action
-                )
-            case "Wander":
-                prompt = self.prompt_manager.get_action_prompt(
-                    self.context,
-                    self.memory.session_memory,
-                    action
-                )
-
-        print(f"\033[1;31m{prompt}")
-        output = self.call_llm(prompt)
-        self.memory.store_action(action, self.step, output)
-        if first_step["action"] == action and first_step.get("status") != "completed":
-            first_step["status"] = "completed"
-            plan.pop(0)  # Remove completed step
+        plan = self.current_plan
+        print(f"Current plan: {plan}")
+        batch = []
+        for step in plan:
+            print(step)
+            print(len(plan))
+            if "status" not in step:
+                step["status"] = "pending"
+            #todo create unique action execution system
+            action = step["action"]
+            match action:
+                case "Think":
+                    prompt = self.prompt_manager.get_action_prompt(
+                        self.context,
+                        self.memory.session_memory,
+                        action
+                    )
+                case "Plan":
+                    prompt = self.prompt_manager.get_action_prompt(
+                        self.context,
+                        self.memory.session_memory,
+                        action
+                    )
+                case "Read":
+                    file_path = observation.get("file_path", "unknown.txt")
+                    return self.tools.read_file(file_path)
+                case "Write":
+                    file_path = observation.get("file_path", "unknown.txt")
+                    content = observation.get("content", "")
+                    return self.tools.write_file(file_path, content)
+                case "Edit":
+                    #Todo write edit logic - read file the re-write with changes using LLM
+                    file_path = observation.get("file_path", "unknown.txt")
+                    content = self.tools.read_file(file_path)
+                    return self.tools.write_file(file_path, content)
+                case "Code":
+                    #Todo write code logic - create custom prompt for coding tasks
+                    prompt = self.prompt_manager.get_action_prompt(
+                        self.context,
+                        self.memory.session_memory,
+                        action
+                    )
+                case "Recall":
+                    query = observation.get("query", "")
+                    return self.tools.read_memory(query)
+                case "Memorize":
+                    memory_type = observation.get("memory_type", "general")
+                    memory_content = observation.get("memory_content", "")
+                    return self.tools.write_memory(memory_content)
+                case "Search":
+                    query = observation.get("query", "")
+                    return self.tools.web_search(query)
+                case "Respond":
+                    prompt = self.prompt_manager.get_action_prompt(
+                        self.context,
+                        self.memory.session_memory,
+                        action
+                    )
+                case "Wander":
+                    prompt = self.prompt_manager.get_action_prompt(
+                        self.context,
+                        self.memory.session_memory,
+                        action
+                    )
+            print(f"\033[1;31m{prompt}")
+            output = self.call_llm(prompt)
+            batch.append((step, action, output))
+            self.memory.store_action(action, self.step, output)
+            if step["status"] != "completed":
+                step["status"] = "completed"
+                time.sleep(5)  # Simulate time taken to perform action
 
         self.step += 1
-        return output
+        return json.dumps([{"step": s, "action": a, "result": o} for s, a, o in batch])
 
 
     def reflect(self, response):
         """
         Reflection phase - Aria integrates insights and updates her understanding.
         """
+
+        action_results = json.loads(response)
+        print(f"Action results: {action_results}")
         try:
             reflection_prompt = self.prompt_manager.get_reflection_prompt(
                 self.context,
                 self.memory.session_memory,
-                response
+                action_results
             )
             print(f"\033[1;31m{reflection_prompt}")
 
