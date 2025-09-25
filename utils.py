@@ -20,6 +20,7 @@ class ToolSystem:
             )
         except Exception as e:
             print(f"Error writing memory: {e}")
+        return "Memory written successfully"
     
     def read_memory(self, query, n_results=5):
         """Read memory from long-term storage with error handling"""

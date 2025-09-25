@@ -36,8 +36,7 @@ class MemorySystem:
         """Store observation data with error handling"""
         try:
             self.session_memory["working_memory"] = observation.get("working_memory", "Error extracting working memory")
-            self.session_memory["next_directive"] = observation.get("directive", "Continue with current objective")
-            self.session_memory["plan"] = observation.get("plan", [])
+            self.session_memory["plan"] += observation.get("plan", [])
             self.session_memory["current_objective"] = observation.get("current_objective", "No current objective defined")
             self.session_memory["emotional_state"] = observation.get("emotional_state", {})
             self.session_memory["open_questions"] = observation.get("open_questions", [])

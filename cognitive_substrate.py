@@ -35,7 +35,6 @@ class AriaCore:
         self.tools = ToolSystem()
         self.step = 0
         self.context = self.memory.get_context()
-        self.current_plan = []
 
     def observe(self, aggregate):
         """
@@ -95,7 +94,6 @@ class AriaCore:
 
             # Store in memory so Aria "remembers" her past evaluations
             self.memory.store_observation(parsed_observation)
-            self.current_plan = parsed_observation.get("plan", [])
 
             return parsed_observation
             
@@ -119,14 +117,18 @@ class AriaCore:
         """
         Action phase - Aria executes based on her observation.
         """
-        plan = self.current_plan
+        plan = self.memory.session_memory["plan"]
         print(f"Current plan: {plan}")
-        batch = []
+        batch = ""
         for step in plan:
-            print(step)
-            print(len(plan))
+            directive = step.get("description", "No directive provided")
+            parameters = step.get("parameters", [])
+            output = "No output generated"
             if "status" not in step:
                 step["status"] = "pending"
+            if step["status"] == "completed":
+                continue  # Skip already completed steps
+            # Execute the action
             #todo create unique action execution system
             action = step["action"]
             match action:
@@ -134,79 +136,86 @@ class AriaCore:
                     prompt = self.prompt_manager.get_action_prompt(
                         self.context,
                         self.memory.session_memory,
-                        action
+                        action,
+                        directive
                     )
+                    output = self.call_llm(prompt)
                 case "Plan":
                     prompt = self.prompt_manager.get_action_prompt(
                         self.context,
                         self.memory.session_memory,
-                        action
+                        action,
+                        directive
                     )
+                    output = self.call_llm(prompt)
                 case "Read":
                     file_path = observation.get("file_path", "unknown.txt")
-                    return self.tools.read_file(file_path)
+                    output = self.tools.read_file(file_path)
                 case "Write":
-                    file_path = observation.get("file_path", "unknown.txt")
-                    content = observation.get("content", "")
-                    return self.tools.write_file(file_path, content)
+                    file_path = parameters[0] if parameters else "unknown.txt"
+                    content = parameters[1] if len(parameters) > 1 else "No content provided"
+                    output = self.tools.write_file(file_path, content)
                 case "Edit":
                     #Todo write edit logic - read file the re-write with changes using LLM
                     file_path = observation.get("file_path", "unknown.txt")
                     content = self.tools.read_file(file_path)
-                    return self.tools.write_file(file_path, content)
+                    output =  self.tools.write_file(file_path, content)
                 case "Code":
                     #Todo write code logic - create custom prompt for coding tasks
                     prompt = self.prompt_manager.get_action_prompt(
                         self.context,
                         self.memory.session_memory,
-                        action
+                        action,
+                        directive
                     )
+                    output = self.call_llm(prompt)
                 case "Recall":
                     query = observation.get("query", "")
-                    return self.tools.read_memory(query)
+                    output = self.tools.read_memory(query)
                 case "Memorize":
-                    memory_type = observation.get("memory_type", "general")
+                    #memory_type = observation.get("memory_type", "general")
                     memory_content = observation.get("memory_content", "")
-                    return self.tools.write_memory(memory_content)
+                    output = self.tools.write_memory(memory_content)
                 case "Search":
-                    query = observation.get("query", "")
-                    return self.tools.web_search(query)
+                    query = parameters[0] if parameters else "latest news"
+                    output = self.tools.web_search(query)
                 case "Respond":
                     prompt = self.prompt_manager.get_action_prompt(
                         self.context,
                         self.memory.session_memory,
-                        action
+                        action,
+                        directive
                     )
+                    output = self.call_llm(prompt)
+                    # Emit event to notifiy any listeners (e.g., UI) of new response
+                    # Mark user input as responded to in memory
                 case "Wander":
                     prompt = self.prompt_manager.get_action_prompt(
                         self.context,
                         self.memory.session_memory,
-                        action
+                        action,
+                        directive
                     )
-            print(f"\033[1;31m{prompt}")
-            output = self.call_llm(prompt)
-            batch.append((step, action, output))
+                    output = self.call_llm(prompt)
+            
             self.memory.store_action(action, self.step, output)
             if step["status"] != "completed":
                 step["status"] = "completed"
                 time.sleep(5)  # Simulate time taken to perform action
-
+            batch += f"Action: {action}\nOutput: {output}\n\n"
         self.step += 1
-        return json.dumps([{"step": s, "action": a, "result": o} for s, a, o in batch])
+        return batch
 
 
     def reflect(self, response):
         """
         Reflection phase - Aria integrates insights and updates her understanding.
         """
-
-        action_results = json.loads(response)
-        print(f"Action results: {action_results}")
         try:
             reflection_prompt = self.prompt_manager.get_reflection_prompt(
                 self.context,
                 self.memory.session_memory,
-                action_results
+                response
             )
             print(f"\033[1;31m{reflection_prompt}")
 
