@@ -21,7 +21,7 @@ class EnvironmentalSignal(BaseModel):
 
 class MindState(BaseModel):
     current_focus: Optional[str]
-    working_memory: str
+    working_memory: Optional[list]
     environmental_signals_pending: int
     emotional_state: Dict[str, float]
 
@@ -127,9 +127,9 @@ class AriaCore:
             if "status" not in step:
                 step["status"] = "pending"
             if step["status"] == "completed":
-                continue  # Skip already completed steps
+                continue
+
             # Execute the action
-            #todo create unique action execution system
             action = step["action"]
             match action:
                 case "Think":
@@ -153,7 +153,15 @@ class AriaCore:
                     output = self.tools.read_file(file_path)
                 case "Write":
                     file_path = parameters[0] if parameters else "unknown.txt"
-                    content = parameters[1] if len(parameters) > 1 else "No content provided"
+                    description = parameters[1] if len(parameters) > 1 else "No content provided"
+
+                    prompt = self.prompt_manager.get_action_prompt(
+                        self.context,
+                        self.memory.session_memory,
+                        action,
+                        description
+                    )
+                    content = self.call_llm(prompt)
                     output = self.tools.write_file(file_path, content)
                 case "Edit":
                     #Todo write edit logic - read file the re-write with changes using LLM
@@ -198,12 +206,12 @@ class AriaCore:
                     )
                     output = self.call_llm(prompt)
             
-            self.memory.store_action(action, self.step, output)
             if step["status"] != "completed":
                 step["status"] = "completed"
                 time.sleep(5)  # Simulate time taken to perform action
             batch += f"Action: {action}\nOutput: {output}\n\n"
         self.step += 1
+        self.memory.store_action(batch)
         return batch
 
 
@@ -361,11 +369,9 @@ class AriaCore:
     
     def get_mind_state(self) -> MindState:
         """Current snapshot of Aria's mind"""
-        print(f"Getting mind state at {datetime.now()}")
-        print(f"Current directive: {self.memory.session_memory['next_directive']} | Pending signals: {len(self.environmental_signals)} | Emotional state: {self.memory.session_memory.get("emotional_state", {})} | Working memory: {self.memory.session_memory.get("working_memory", "No working memory")}")
         return MindState(
-            current_focus=self.memory.session_memory.get("next_directive", "No current directive"),
-            working_memory=self.memory.session_memory.get("working_memory", "No working memory"),
+            current_focus=self.memory.session_memory.get("current_objective", "No current objective"),
+            working_memory=self.memory.session_memory.get("past_actions", "No working memory"),
             environmental_signals_pending=len(self.environmental_signals),
             emotional_state=self.memory.session_memory.get("emotional_state", {})
         )

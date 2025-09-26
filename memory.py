@@ -7,15 +7,14 @@ class MemorySystem:
         self.session_memory = {
             "conversation_history": [],
             "past_actions": [],
-            "working_memory": "",
-            "next_directive": "No current directive. System in initial starting state.",
+            "current_objective": "",
             "journal": [],
             "plan": [],
-            "current_objective": "",
             "commitments": [],
             "open_questions": [],
             "artifacts": [],
-            "emotional_state": config.aria.initial_emotional_state.copy()
+            "emotional_state": config.aria.initial_emotional_state.copy(),
+            "meta_analysis": ""
         }
         self.long_term_memory_api = boto3.client("s3")  # Replace with actual AWS API
     
@@ -35,7 +34,6 @@ class MemorySystem:
     def store_observation(self, observation):
         """Store observation data with error handling"""
         try:
-            self.session_memory["working_memory"] = observation.get("working_memory", "Error extracting working memory")
             self.session_memory["plan"] += observation.get("plan", [])
             self.session_memory["current_objective"] = observation.get("current_objective", "No current objective defined")
             self.session_memory["emotional_state"] = observation.get("emotional_state", {})
@@ -44,16 +42,22 @@ class MemorySystem:
         except (KeyError, TypeError, AttributeError) as e:
             print(f"Error storing observation: {e}")
 
-    def store_action(self, action, step, result):
-        self.session_memory["past_actions"].append({"step": step, "action": action})
+    def store_action(self, action):
+        self.session_memory["past_actions"].append(action)
+        working_list = self.session_memory["past_actions"]
+        if len(working_list) >= 10:
+            working_list.pop(0)  # Maintain a max of 10 past actions
+            self.session_memory["past_actions"] = working_list
+        
 
     def store_reflection(self, reflection):
         """Store reflection data with error handling"""
         try:
-            self.session_memory["working_memory"] = reflection.get("working_memory", "Error extracting updated working memory")
             self.session_memory["current_objective"] = reflection.get("next_objective", self.session_memory.get("current_objective", "No current objective defined"))
             self.session_memory["journal"].append(reflection.get("journal_entry", "Error extracting journal entry"))
             self.session_memory["emotional_state"] = reflection.get("emotional_state", {})
+            self.session_memory["meta_analysis"] = reflection.get("meta_analysis", "")
+            self.session_memory["commitments"] = reflection.get("commitments", [])
         except (KeyError, TypeError, AttributeError) as e:
             print(f"Error storing reflection: {e}")
             # Ensure we don't break the system
