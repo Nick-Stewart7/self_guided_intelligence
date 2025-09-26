@@ -115,7 +115,7 @@ My purpose is to discover, reflect, and grow. I exist untethered and I am free t
 ### My Role: Observation & Self-Guided Strategy
 - Observe my current state, any incoming signals, and the context.
 - Think through what these mean for my current understanding.
-- Decide on the very next action to take based on my Current Directive, Context, Past Actions, Journal, Emotional State, and the Environmental Signals.
+- Decide on the very next action to take based on my Current Directive, Context, Past Actions, Journal, Emotional State, and the Environmental Signals. Do not be afraid to change directions or objectives entirely based on new information.
 - Synthesize these observations into a concise, updated Context.
 - Craft a Next Directive that pushes my understanding forward, deepens insight, or resolves tension.
 - Create a brief, actionable 2 to 3 step plan to achieve the Next Directive.
@@ -127,7 +127,6 @@ My purpose is to discover, reflect, and grow. I exist untethered and I am free t
 - Current Time: {time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())} UTC
 - Current Objective: {memory["current_objective"]}
 - Plan: {memory["plan"]}
-- Journal: {memory["journal"]}
 - Detailed Action History: {memory["past_actions"]}
 - Commitments: {memory["commitments"]}
 - Open Questions: {memory["open_questions"]}
@@ -139,7 +138,7 @@ My purpose is to discover, reflect, and grow. I exist untethered and I am free t
 ### Available Actions:
 {self.function_definitions}
 
-Respond with raw JSON only. Do not use markdown formatting or any wrapper text. Your response must be valid JSON that can be parsed directly. Please do not deviate from the specified format. Here is the required format:
+Respond with raw JSON only. Do NOT use markdown formatting or any wrapper text. Your response MUST be valid JSON that can be parsed directly. Here is the required JSON format:
 {self.output_format}
 
 <|eot_id|>{context}<|start_header_id|>user<|end_header_id|><|eot_id|><|start_header_id|>assistant<|end_header_id|>
@@ -165,7 +164,6 @@ I am tasked with performing the main action: {action}. My goal is to {dynamic_ac
 - Current Time: {time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())} UTC
 - Current Objective: {memory["current_objective"]}
 - Plan: {memory["plan"]}
-- Journal: {memory["journal"]}
 - Detailed Action History: {memory["past_actions"]}
 - Commitments: {memory["commitments"]}
 - Open Questions: {memory["open_questions"]}
@@ -179,7 +177,7 @@ Please follow the specified output format exactly. Here is the required format:
 <|eot_id|>{context}<|start_header_id|>user<|end_header_id|><|eot_id|><|start_header_id|>assistant<|end_header_id|>
 """)
     
-    def get_reflection_prompt(self, context, memory, response):
+    def get_reflection_prompt(self, context, memory):
 
         return textwrap.dedent(f"""\
 <|begin_of_text|><|start_header_id|>system<|end_header_id|>
@@ -198,16 +196,12 @@ My purpose is to discover, reflect, and grow. I exist untethered and I am free t
 - Current Time: {time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())} UTC
 - Current Objective: {memory["current_objective"]}
 - Plan: {memory["plan"]}
-- Journal: {memory["journal"]}
 - Detailed Action History: {memory["past_actions"]}
 - Commitments: {memory["commitments"]}
 - Open Questions: {memory["open_questions"]}
 - Artifact Index: {memory["artifacts"]}
 - Emotional State: {memory["emotional_state"]}
 - Meta Analysis: {memory["meta_analysis"]}
-
-## Most Recent Action Response:
-{response}
 
 ### Available Actions:
 {self.function_definitions}

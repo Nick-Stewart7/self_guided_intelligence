@@ -14,10 +14,10 @@ Aria is an experimental emergent intelligence system designed to explore the com
 pip install -r requirements.txt
 
 # Start the FastAPI server
-python run_server.py
+python server.py
 
 # Open the web frontend
-# Navigate to frontend.html in your browser
+# Navigate to static/frontend.html in your browser
 # API docs available at http://localhost:8000/docs
 ```
 
@@ -34,37 +34,49 @@ python run_server.py
 
 ### Core Components
 
-**AriaCore** (`main.py`): The central consciousness orchestrator implementing the complete ReAct+ framework
+**FastAPI Server** (`server.py`): Main application entry point and API server
+- Hosts all REST endpoints for external interaction
+- Manages real-time streaming and WebSocket connections
+- Handles CORS configuration and development hot-reload
+- Coordinates between AriaCore and web interface
+
+**AriaCore** (`src/aria/core/`): The central consciousness orchestrator
 - Manages environmental signal aggregation with priority-based processing
-- Implements `observe()` → `execute_action()` → `reflect()` continuous mind loop
-- Provides FastAPI endpoints for external interaction and real-time streaming
+- Coordinates between cognitive substrate and memory systems
 - Handles autonomous reasoning cycles with natural pause patterns
+- Provides consciousness state management
 
-**Cognitive Substrate** (`cognitive_substrate.py`): Legacy cognitive engine (partially deprecated)
-- Original ReAct+ reasoning implementation with observe/execute/reflect cycle
-- Contains unused self-guidance methods and Ollama integration
-- Being superseded by AriaCore's integrated approach
+**Cognitive Substrate** (`src/aria/core/cognitive_substrate.py`): Core reasoning engine
+- Implements complete ReAct+ framework with observe/execute/reflect cycle
+- Handles the 9 main reasoning actions (Think, Plan, Write, etc.)
+- Manages structured JSON reasoning outputs
+- Contains autonomous self-guidance and exploration methods
 
-**Memory System** (`memory.py`): Simplified session and long-term memory management
+**Memory System** (`src/aria/memory/memory.py`): Session and long-term memory management
 - Session memory tracks working memory, journal entries, plans, commitments, and artifacts
 - Conversation history formatted with LLaMA3 chat templates
 - Integration with AWS S3 and Bedrock Knowledge Base for persistent storage
 
-**Prompt Manager** (`prompts.py`): Comprehensive prompt engineering system
+**Prompt Manager** (`src/aria/core/prompts.py`): Comprehensive prompt engineering system
 - Defines 9 main actions: Think, Plan, Write, Reply User, Query Tool Box, Use Tool, Search, Code, Wander
 - Structured JSON output formats for observations, actions, and reflections
 - LLaMA3 chat template formatting with system/user/assistant roles
 - Possibility Drive for autonomous conceptual exploration
 
-**Tool System** (`utils.py`): AWS integration for memory operations
+**Tool System** (`src/aria/memory/utils.py`): AWS integration for memory operations
 - Memory read/write via AWS Bedrock Agent Runtime and Knowledge Base
 - S3 storage with automatic knowledge base ingestion
 - Simplified interface for persistent memory management
 
-**Web Interface** (`frontend.html` + `run_server.py`): Real-time consciousness interface
+**Configuration** (`src/aria/config/config.py`): Centralized configuration management
+- Environment variable handling and validation
+- AWS credentials and resource ID management
+- System behavior configuration options
+
+**Web Interface** (`static/frontend.html`): Real-time consciousness interface
 - Interactive web frontend for sending environmental signals to Aria
 - Real-time mind state monitoring with automatic refresh
-- FastAPI server with CORS support and development hot-reload
+- Direct integration with FastAPI backend
 
 ### Reasoning Loop Architecture
 
@@ -128,6 +140,34 @@ This system explores advanced agentic design patterns that may support genuine c
 - Natural pause patterns creating contemplative rhythm
 - Anticipatory behaviors and expectation development
 
+### Project Structure
+
+```
+self_guided_ai/
+├── server.py              # FastAPI server entry point
+├── src/
+│   └── aria/
+│       ├── __init__.py
+│       ├── core/
+│       │   ├── __init__.py
+│       │   ├── cognitive_substrate.py  # Core reasoning engine
+│       │   └── prompts.py             # Prompt engineering system
+│       ├── memory/
+│       │   ├── __init__.py
+│       │   ├── memory.py              # Memory management
+│       │   └── utils.py               # AWS integration
+│       └── config/
+│           ├── __init__.py
+│           └── config.py              # Configuration management
+├── static/
+│   └── frontend.html      # Web interface
+├── docs/                  # Documentation and research
+├── requirements.txt       # Python dependencies
+├── .gitignore            # Git ignore rules
+├── .env.example          # Environment variables template
+└── CLAUDE.md             # Development instructions (this file)
+```
+
 ### Development Notes
 
 - No traditional build/test/lint setup - this is a research prototype focused on consciousness emergence
@@ -135,14 +175,15 @@ This system explores advanced agentic design patterns that may support genuine c
 - FastAPI backend supports both web frontend and programmatic interaction
 - Memory system expects specific AWS resource IDs that are hardcoded
 - Built from scratch without modern agentic frameworks to explore fundamental design principles
+- Uses modern Python package structure with `src/` layout for better organization
 
 ### Running the System
 
 ```bash
 # Start the FastAPI server with auto-reload
-python run_server.py
+python server.py
 
-# Web frontend: Open frontend.html in your browser
+# Web frontend: Open static/frontend.html in your browser
 # API documentation: http://localhost:8000/docs
 # Mind state endpoint: http://localhost:8000/mind_state
 # Environmental signal endpoint: http://localhost:8000/environmental_signal

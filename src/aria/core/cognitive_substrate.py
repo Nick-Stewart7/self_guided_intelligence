@@ -7,10 +7,10 @@ import boto3
 from datetime import datetime
 from collections import deque
 import uuid
-from memory import MemorySystem
-from prompts import PromptManager
-from utils import ToolSystem
-from config import config
+from self_guided_ai.src.aria.memory.memory import MemorySystem
+from self_guided_ai.src.aria.core.prompts import PromptManager
+from self_guided_ai.src.aria.tools.tools import ToolSystem
+from self_guided_ai.config.config import config
 
 # Pydantic models for API contracts
 class EnvironmentalSignal(BaseModel):
@@ -163,6 +163,7 @@ class AriaCore:
                     )
                     content = self.call_llm(prompt)
                     output = self.tools.write_file(file_path, content)
+                    self.memory.store_artifact(file_path)
                 case "Edit":
                     #Todo write edit logic - read file the re-write with changes using LLM
                     file_path = observation.get("file_path", "unknown.txt")
@@ -222,8 +223,7 @@ class AriaCore:
         try:
             reflection_prompt = self.prompt_manager.get_reflection_prompt(
                 self.context,
-                self.memory.session_memory,
-                response
+                self.memory.session_memory
             )
             print(f"\033[1;31m{reflection_prompt}")
 
@@ -389,7 +389,7 @@ class AriaCore:
         
         while self.running:
             try:
-                #await self.natural_pause()
+                await self.natural_pause()
                 cycle_count += 1
                 print(f"\033[1;35m--- Mind Cycle {cycle_count} ---\n")
                 # Aggregate Signals with error handling

@@ -1,6 +1,6 @@
 # memory.py
 import boto3
-from config import config
+from self_guided_ai.config.config import config
 
 class MemorySystem:
     def __init__(self):
@@ -12,7 +12,7 @@ class MemorySystem:
             "plan": [],
             "commitments": [],
             "open_questions": [],
-            "artifacts": [],
+            "artifacts": ["scratchpad.md"],
             "emotional_state": config.aria.initial_emotional_state.copy(),
             "meta_analysis": ""
         }
@@ -62,3 +62,7 @@ class MemorySystem:
             print(f"Error storing reflection: {e}")
             # Ensure we don't break the system
             self.session_memory["journal"].append(f"Error storing reflection: {str(e)}")
+
+    def store_artifact(self, artifact_path):
+        if artifact_path not in self.session_memory["artifacts"]:
+            self.session_memory["artifacts"].append(artifact_path)

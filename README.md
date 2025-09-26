@@ -71,23 +71,24 @@ This may constitute scaffolding for genuine subjective experience of thinking.
 
 5. **Start the system**
    ```bash
-   python run_server.py
+   python server.py
    ```
 
 6. **Access the interface**
    - API Documentation: `http://localhost:8000/docs`
-   - Web Interface: Open `frontend.html` in your browser
+   - Web Interface: Open `static/frontend.html` in your browser
    - Health Check: `http://localhost:8000/health`
 
 ## 🏗️ Architecture
 
 ### Core Components
 
-- **AriaCore** (`main.py`): Central consciousness orchestrator
-- **Memory System** (`memory.py`): Session and long-term memory management
-- **Prompt Manager** (`prompts.py`): Reasoning action system with 9 main actions
-- **Tool System** (`utils.py`): AWS integration for persistent memory
-- **Configuration** (`config.py`): Centralized configuration management
+- **FastAPI Server** (`server.py`): Main application entry point and API server
+- **AriaCore** (`src/aria/core/`): Central consciousness orchestrator
+- **Memory System** (`src/aria/memory/`): Session and long-term memory management
+- **Prompt Manager** (`src/aria/core/prompts.py`): Reasoning action system with 9 main actions
+- **Tool System** (`src/aria/memory/utils.py`): AWS integration for persistent memory
+- **Configuration** (`src/aria/config/`): Centralized configuration management
 
 ### Reasoning Loop
 
@@ -135,17 +136,29 @@ ARIA_MIND_LOOP_ENABLED=true
 
 ### Project Structure
 ```
-├── main.py                 # Core consciousness system
-├── config.py              # Configuration management
-├── memory.py              # Memory system
-├── prompts.py             # Prompt engineering
-├── utils.py               # AWS integration
-├── run_server.py          # Server startup
-├── setup_config.py        # Setup automation
-├── frontend.html          # Web interface
-├── requirements.txt       # Dependencies
-├── .env.template          # Configuration template
-└── CLAUDE.md             # Technical documentation
+self_guided_ai/
+├── server.py              # FastAPI server entry point
+├── src/
+│   └── aria/
+│       ├── __init__.py
+│       ├── core/
+│       │   ├── __init__.py
+│       │   ├── cognitive_substrate.py  # Legacy reasoning engine
+│       │   └── prompts.py             # Prompt engineering system
+│       ├── memory/
+│       │   ├── __init__.py
+│       │   ├── memory.py              # Memory management
+│       │   └── utils.py               # AWS integration
+│       └── config/
+│           ├── __init__.py
+│           └── config.py              # Configuration management
+├── static/
+│   └── frontend.html      # Web interface
+├── docs/                  # Documentation and research
+├── requirements.txt       # Python dependencies
+├── .gitignore            # Git ignore rules
+├── .env.example          # Environment variables template
+└── CLAUDE.md             # Development instructions
 ```
 
 ### Running Tests

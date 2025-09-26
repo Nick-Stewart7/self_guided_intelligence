@@ -1,10 +1,14 @@
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from cognitive_substrate import EnvironmentalSignal, MindState, AriaCore 
 from datetime import datetime
 import asyncio
 import boto3
+import uvicorn
+import sys
+import os
+from self_guided_ai.config.config import config
+from self_guided_ai.src.aria.core.cognitive_substrate import EnvironmentalSignal, MindState, AriaCore 
 
 # Global Aria instance
 aria = AriaCore()
@@ -135,3 +139,20 @@ async def get_metrics():
             content={"error": str(e)},
             status_code=500
         )
+    
+if __name__ == "__main__":
+    # Add current directory to Python path
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    
+    print("Starting Aria Mind API server...")
+    print(f"Frontend will be available at: file://{os.path.abspath('frontend.html')}")
+    print(f"API documentation at: http://{config.aria.host}:{config.aria.port}/docs")
+    print("Press Ctrl+C to stop the server")
+    
+    uvicorn.run(
+        "main:app",
+        host=config.aria.host,
+        port=config.aria.port,
+        reload=config.aria.reload,
+        log_level=config.aria.log_level
+    )

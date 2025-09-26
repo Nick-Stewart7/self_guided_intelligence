@@ -20,6 +20,9 @@ credentials
 *.log
 logs/
 
+# Artifacts
+*.md
+
 # IDE files
 .vscode/
 .idea/

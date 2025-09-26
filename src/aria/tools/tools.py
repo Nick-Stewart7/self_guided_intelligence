@@ -1,5 +1,5 @@
 import uuid
-from config import config
+from self_guided_ai.config.config import config
 import chromadb
 from tavily import TavilyClient
 
