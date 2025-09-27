@@ -35,3 +35,6 @@ Thumbs.db
 
 # Deprecated files (kept for reference but not actively maintained)
 *_deprecated.py
+
+# claude stuff
+CLAUDE.md
