@@ -97,7 +97,7 @@ class AriaCore:
 
             return parsed_observation
             
-        except Exception as e:
+        except (KeyError, ValueError, TypeError) as e:
             print(f"Critical error in observe method: {e}")
             # Return emergency fallback
             return {
