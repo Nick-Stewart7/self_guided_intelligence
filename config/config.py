@@ -3,7 +3,6 @@ Configuration management for Aria consciousness system.
 Handles environment variables, AWS resources, and system parameters.
 """
 from typing import Dict, Any, Optional
-from dataclasses import dataclass
 import json
 
 
@@ -102,4 +101,4 @@ class ConfigManager:
         }
 
 # Global configuration instance
-config = ConfigManager("config.json")
+config = ConfigManager("./config/config.json")

@@ -21,7 +21,7 @@ credentials
 logs/
 
 # Artifacts
-*.md
+artifacts/
 
 # IDE files
 .vscode/

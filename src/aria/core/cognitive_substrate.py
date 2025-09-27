@@ -7,10 +7,10 @@ import boto3
 from datetime import datetime
 from collections import deque
 import uuid
-from self_guided_ai.src.aria.memory.memory import MemorySystem
-from self_guided_ai.src.aria.core.prompts import PromptManager
-from self_guided_ai.src.aria.tools.tools import ToolSystem
-from self_guided_ai.config.config import config
+from src.aria.memory.memory import MemorySystem
+from src.aria.core.prompts import PromptManager
+from src.aria.tools.tools import ToolSystem
+from config.config import config
 
 # Pydantic models for API contracts
 class EnvironmentalSignal(BaseModel):

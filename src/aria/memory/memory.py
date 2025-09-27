@@ -1,6 +1,6 @@
 # memory.py
 import boto3
-from self_guided_ai.config.config import config
+from config.config import config
 
 class MemorySystem:
     def __init__(self):

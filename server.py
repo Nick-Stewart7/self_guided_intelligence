@@ -7,8 +7,8 @@ import boto3
 import uvicorn
 import sys
 import os
-from self_guided_ai.config.config import config
-from self_guided_ai.src.aria.core.cognitive_substrate import EnvironmentalSignal, MindState, AriaCore 
+from config.config import config
+from src.aria.core.cognitive_substrate import EnvironmentalSignal, MindState, AriaCore 
 
 # Global Aria instance
 aria = AriaCore()
@@ -28,6 +28,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     """Start Aria's mind when the server starts"""
+    print("Starting Aria's mind...")
     asyncio.create_task(aria.mind_loop())
 
 @app.on_event("shutdown")
@@ -150,7 +151,7 @@ if __name__ == "__main__":
     print("Press Ctrl+C to stop the server")
     
     uvicorn.run(
-        "main:app",
+        "server:app",
         host=config.aria.host,
         port=config.aria.port,
         reload=config.aria.reload,

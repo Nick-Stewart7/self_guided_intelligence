@@ -1,5 +1,5 @@
 import uuid
-from self_guided_ai.config.config import config
+from config.config import config
 import chromadb
 from tavily import TavilyClient
 
@@ -8,7 +8,7 @@ class ToolSystem:
     def __init__(self):
           self.config = config
           self.chroma_client = chromadb.Client()
-          self.collection = self.chroma_client.create_collection(name="long_term_memory")
+          self.collection = self.chroma_client.get_or_create_collection(name="long_term_memory")
 
     def write_memory(self, memory):
         """Write memory to long-term storage with error handling"""
@@ -37,6 +37,7 @@ class ToolSystem:
     def read_file(self, file_path):
         """Read a file with error handling"""
         try:
+            file_path = "./artifacts/" + file_path
             f = open(file_path, 'r', encoding='utf-8')
             content = f.read()
             f.close()   
@@ -48,6 +49,7 @@ class ToolSystem:
     def write_file(self, file_path, content):
         """Write a file with error handling"""
         try:
+            file_path = "./artifacts/" + file_path
             f = open(file_path, 'w', encoding='utf-8')
             f.write(content)
             f.close()
