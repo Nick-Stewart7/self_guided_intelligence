@@ -381,7 +381,7 @@ class AriaCore:
         await asyncio.sleep(config.aria.natural_pause_seconds)
 
     async def mind_loop(self):
-        """Aria's continuous consciousness with comprehensive error handling"""
+        """Aria's continuous with comprehensive error handling"""
         self.running = True
         cycle_count = 0
         consecutive_errors = 0

@@ -1,5 +1,5 @@
 """
-Configuration management for Aria consciousness system.
+Configuration management for Aria system.
 Handles environment variables, AWS resources, and system parameters.
 """
 from typing import Dict, Any, Optional
